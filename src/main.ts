@@ -2,12 +2,18 @@
 // `<script type="module" src="/src/main.ts"></script>` (Vite lo resuelve en
 // dev; para file:// no hace nada, el legado sigue usando su renderTable inline).
 //
-// Feature flag para probar módulos nuevos sin romper producción:
-//   localStorage.setItem('USE_NEW_RENDER', '1')  →  usa src/ui/renderTable
-//   localStorage.removeItem('USE_NEW_RENDER')    →  legado (default)
+// Arquitectura:
+//   1. `bindLegacyWindow()` espeja `window.units/selId/checklistDB/hasZip/zipImgs`
+//      con el store `appStore`. Escrituras en cualquiera de los dos lados se
+//      propagan. Esto permite coexistencia con el legado sin refactor grande.
+//   2. Feature flags por funcionalidad. Default = OFF → comportamiento legado intacto.
+//      - USE_NEW_RENDER: tabla Inspecciones via src/ui/renderTable
+//      - USE_NEW_PDF:    exportPDF via src/pdf/unitReport
+//      - USE_STORE:      log de cambios del store (debug)
 
 import { renderTable as renderTableNew } from "./ui/renderTable";
 import { buildUnitReport } from "./pdf/unitReport";
+import { appStore, bindLegacyWindow } from "./state/appState";
 import type { Unit, ChecklistDB } from "./types";
 
 declare global {
@@ -25,34 +31,45 @@ declare global {
     filt?: () => Unit[];
     /** flag interno para detectar si el module-script se cargó. */
     __newRenderAvailable?: boolean;
+    /** store expuesto en dev para inspección via devtools. */
+    __appStore?: typeof appStore;
   }
 }
 
 window.__newRenderAvailable = true;
+window.__appStore = appStore;
 
-const flag = (() => {
+// Bridge bidireccional window.* ↔ appStore. Siempre activo para que los
+// módulos nuevos puedan leer del store, y el legado siga escribiendo como
+// siempre a window.*.
+bindLegacyWindow();
+
+function readFlag(key: string): boolean {
   try {
-    return localStorage.getItem("USE_NEW_RENDER") === "1";
+    return localStorage.getItem(key) === "1";
   } catch {
     return false;
   }
-})();
+}
 
-if (flag) {
+// ─── Feature flag: render-table (P2.2c) ────────────────────────────────
+if (readFlag("USE_NEW_RENDER")) {
   const legacyRenderTable = window.renderTable;
 
   window.renderTable = function renderTableShim() {
     const tbody = document.getElementById("tbody");
     if (!tbody) return;
-    const rows = window.filt ? window.filt() : window.units ?? [];
+    // window.filt() es el filtro legado; si no existe, usa units del store.
+    const rows = window.filt ? window.filt() : appStore.get("units");
+    const totalUnits = appStore.get("units").length;
     const rcnt = document.getElementById("rcnt");
-    if (rcnt) rcnt.textContent = `${rows.length}/${(window.units ?? []).length}`;
+    if (rcnt) rcnt.textContent = `${rows.length}/${totalUnits}`;
     try {
       renderTableNew(tbody, {
         units: rows,
-        selectedUid: window.selId ?? null,
-        checklistDB: window.checklistDB ?? {},
-        hasZip: window.hasZip ?? false,
+        selectedUid: appStore.get("selectedUid"),
+        checklistDB: appStore.get("checklistDB"),
+        hasZip: appStore.get("hasZip"),
         isUnitEnTaller: window.isUnitEnTaller,
         parseSvcDate: window.parseSvcDate,
         onSelect: window.selUnit,
@@ -65,25 +82,17 @@ if (flag) {
 
   console.info(
     "[control-flotilla] USE_NEW_RENDER activo — tabla Inspecciones usa src/ui/renderTable.ts. " +
-    "Desactiva con: localStorage.removeItem('USE_NEW_RENDER')",
+      "Desactiva con: localStorage.removeItem('USE_NEW_RENDER')",
   );
 }
 
 // ─── Feature flag: PDF export (P2.2d) ──────────────────────────────────
-const pdfFlag = (() => {
-  try {
-    return localStorage.getItem("USE_NEW_PDF") === "1";
-  } catch {
-    return false;
-  }
-})();
-
-if (pdfFlag) {
+if (readFlag("USE_NEW_PDF")) {
   const legacyExportPDF = window.exportPDF;
 
   window.exportPDF = async function exportPDFShim() {
-    const units = window.units ?? [];
-    const selId = window.selId ?? null;
+    const units = appStore.get("units");
+    const selId = appStore.get("selectedUid");
     const unit = units.find((u) => u.uid === selId);
     if (!unit) {
       alert("Selecciona una unidad primero.");
@@ -91,7 +100,7 @@ if (pdfFlag) {
     }
     try {
       const doc = buildUnitReport(unit, {
-        checklistDB: window.checklistDB ?? {},
+        checklistDB: appStore.get("checklistDB"),
         generatedAt: new Date(),
       });
       const filename = `reporte_${unit.eco || unit.plate || unit.uid}_${new Date().toISOString().slice(0, 10)}.pdf`;
@@ -104,6 +113,17 @@ if (pdfFlag) {
 
   console.info(
     "[control-flotilla] USE_NEW_PDF activo — exportPDF usa src/pdf/unitReport.ts. " +
-    "Desactiva con: localStorage.removeItem('USE_NEW_PDF')",
+      "Desactiva con: localStorage.removeItem('USE_NEW_PDF')",
   );
+}
+
+// ─── Debug flag: log cambios del store ─────────────────────────────────
+if (readFlag("USE_STORE_LOG")) {
+  appStore.subscribe((state, prev) => {
+    const changed = (Object.keys(state) as Array<keyof typeof state>).filter(
+      (k) => state[k] !== prev[k],
+    );
+    console.info("[appStore] change:", changed, { next: state, prev });
+  });
+  console.info("[control-flotilla] USE_STORE_LOG activo — cambios impresos en console.");
 }

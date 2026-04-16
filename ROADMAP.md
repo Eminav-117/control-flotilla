@@ -99,14 +99,21 @@ Mover código del HTML monolito a módulos TS. **Un módulo por PR**, no big-ban
 |     | b) `zip-loader` ✅ 2026-04-16 (combina readZip + loadExcel)      | `src/io/zipLoader.ts`, 5 tests          |
 |     | c) `render-table` (tab Inspecciones) ✅ 2026-04-16               | `src/ui/renderTable.ts`, 24 tests, XSS-safe |
 |     | d) `pdf-export` ✅ 2026-04-16 (engine + unitReport)              | `src/pdf/`, 32 tests                    |
-|     | e) `state` / store central                                       | Última — depende del resto              |
-| 2.3 | Migrar consumers HTML → módulos TS uno a uno con flag opcional   | Feature flag `USE_NEW_MODULE` por tab   |
+|     | e) `state` / store central ✅ 2026-04-16                         | `src/state/store.ts` + `appState.ts`, 16 tests |
+| 2.3 | Migrar consumers HTML → módulos TS con feature flags ✅ 2026-04-16 | `main.ts` wire: USE_NEW_RENDER, USE_NEW_PDF, USE_STORE_LOG |
 
 **P2.1 notas**:
 - CSS inline (`<style>` líneas 150-971) extraído a `src/styles/main.css` con header documentando que es autoritativo.
 - HTML: `<style>...</style>` → `<link rel="stylesheet" href="./src/styles/main.css"/>`.
 - HTML legado pasó de 332KB → 278KB (-16%).
 - Verificado en preview: 486 CSS rules cargadas, body bg correcto, responsive intacto.
+
+**P2.2(e) + P2.3 notas**:
+- `src/state/store.ts`: clase `Store<T>` genérica con pub/sub. API: `get/set/update/subscribe/subscribeKey/reset/state`. Inmutabilidad shallow — cada set produce nueva referencia para diff `===`. 12 tests genéricos (inicialización, set/update, optimización NO-emit si mismo valor, subscribers globales y por-clave, unsubscribe, inmutabilidad ref, múltiples subs).
+- `src/state/appState.ts`: `appStore: Store<AppState>` singleton. Shape tipado: `units`, `selectedUid`, `checklistDB`, `hasZip`, `zipImgs`, `lastFilename`. `bindLegacyWindow()` monta getters/setters en window para espejo bidireccional con propiedades del legado (`units`, `selId`, `checklistDB`, `hasZip`, `zipImgs`). Unbind restaura descriptors originales. 4 tests de integración.
+- `src/main.ts` ahora: `bindLegacyWindow()` siempre activo; los shims de `renderTable`/`exportPDF` leen del store (`appStore.get(...)`) en vez de `window.*` directamente. Store expuesto via `window.__appStore` para debug en devtools.
+- Nueva feature flag `USE_STORE_LOG` — imprime cambios del store en console para debug.
+- Validado en preview: escritura legado → store propaga OK, store.set → window espeja OK, subscribeKey emite solo cuando la clave cambia (no en set con mismo valor), baseline DOM intacto.
 
 **P2.2(d) notas**:
 - `src/pdf/engine.ts`: wrapper delgado sobre jsPDF@4 (ESM) con API ergonómica. Mantiene cursor `y`, maneja paginación automática, expone helpers `line/rect/roundedRect/text/textBlock/pill`. Paleta `PDF_COLORS` alineada con main.css vars. Constantes `A4`, `LETTER`. Helper `riskColor(RiskLevel)`.
