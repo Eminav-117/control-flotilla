@@ -98,7 +98,7 @@ Mover código del HTML monolito a módulos TS. **Un módulo por PR**, no big-ban
 |     | a) `excel-loader` ✅ 2026-04-16                                   | `src/io/excelLoader.ts`, 7 tests        |
 |     | b) `zip-loader` ✅ 2026-04-16 (combina readZip + loadExcel)      | `src/io/zipLoader.ts`, 5 tests          |
 |     | c) `render-table` (tab Inspecciones) ✅ 2026-04-16               | `src/ui/renderTable.ts`, 24 tests, XSS-safe |
-|     | d) `pdf-export` (envuelve `jsPDF`)                               | Snapshot test                           |
+|     | d) `pdf-export` ✅ 2026-04-16 (engine + unitReport)              | `src/pdf/`, 32 tests                    |
 |     | e) `state` / store central                                       | Última — depende del resto              |
 | 2.3 | Migrar consumers HTML → módulos TS uno a uno con flag opcional   | Feature flag `USE_NEW_MODULE` por tab   |
 
@@ -107,6 +107,12 @@ Mover código del HTML monolito a módulos TS. **Un módulo por PR**, no big-ban
 - HTML: `<style>...</style>` → `<link rel="stylesheet" href="./src/styles/main.css"/>`.
 - HTML legado pasó de 332KB → 278KB (-16%).
 - Verificado en preview: 486 CSS rules cargadas, body bg correcto, responsive intacto.
+
+**P2.2(d) notas**:
+- `src/pdf/engine.ts`: wrapper delgado sobre jsPDF@4 (ESM) con API ergonómica. Mantiene cursor `y`, maneja paginación automática, expone helpers `line/rect/roundedRect/text/textBlock/pill`. Paleta `PDF_COLORS` alineada con main.css vars. Constantes `A4`, `LETTER`. Helper `riskColor(RiskLevel)`.
+- `src/pdf/unitReport.ts`: `buildUnitReport(unit, opts)` genera PDF ejecutivo de una sola unidad. Secciones: header teal, identificación + risk pill, datos (fecha/sucursal/km/svc), hallazgos pendientes con dots de severidad, observaciones con wrap, footer con timestamp y paginación. Port parcial del `exportPDF()` legado (~400 líneas); secciones avanzadas (fotos, notas, historial) quedan para futuro.
+- 22 tests engine (constantes, instancia, ensureSpace, paginación auto, textBlock wrap, pill, blob/bytes magic bytes `%PDF-`). 10 tests unitReport (magic bytes, paginación con findings, opts.title/subtitle, checklistDB, obsArr multi, unit sin eco, 4 risk levels, minT null, unit minimalista).
+- Feature flag `USE_NEW_PDF === '1'` wired en `src/main.ts` que override `window.exportPDF`. Validado en preview: genera PDF para unit con 3 findings + obs, sin errores, `save()` dispara descarga.
 
 **P2.2(c) notas**:
 - `src/ui/renderTable.ts`: reemplaza `renderTable()` del legado (línea ~2195). DOM-API first (no `innerHTML` con input de usuario), helpers `mkpill`/`fcell`/`tcell` exportados para tests y reuso.

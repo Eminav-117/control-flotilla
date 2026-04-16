@@ -7,6 +7,7 @@
 //   localStorage.removeItem('USE_NEW_RENDER')    →  legado (default)
 
 import { renderTable as renderTableNew } from "./ui/renderTable";
+import { buildUnitReport } from "./pdf/unitReport";
 import type { Unit, ChecklistDB } from "./types";
 
 declare global {
@@ -20,6 +21,7 @@ declare global {
     selUnit?: (uid: string) => void;
     /** override del legado — si feature flag activa. */
     renderTable?: () => void;
+    exportPDF?: () => void | Promise<void>;
     filt?: () => Unit[];
     /** flag interno para detectar si el module-script se cargó. */
     __newRenderAvailable?: boolean;
@@ -64,5 +66,44 @@ if (flag) {
   console.info(
     "[control-flotilla] USE_NEW_RENDER activo — tabla Inspecciones usa src/ui/renderTable.ts. " +
     "Desactiva con: localStorage.removeItem('USE_NEW_RENDER')",
+  );
+}
+
+// ─── Feature flag: PDF export (P2.2d) ──────────────────────────────────
+const pdfFlag = (() => {
+  try {
+    return localStorage.getItem("USE_NEW_PDF") === "1";
+  } catch {
+    return false;
+  }
+})();
+
+if (pdfFlag) {
+  const legacyExportPDF = window.exportPDF;
+
+  window.exportPDF = async function exportPDFShim() {
+    const units = window.units ?? [];
+    const selId = window.selId ?? null;
+    const unit = units.find((u) => u.uid === selId);
+    if (!unit) {
+      alert("Selecciona una unidad primero.");
+      return;
+    }
+    try {
+      const doc = buildUnitReport(unit, {
+        checklistDB: window.checklistDB ?? {},
+        generatedAt: new Date(),
+      });
+      const filename = `reporte_${unit.eco || unit.plate || unit.uid}_${new Date().toISOString().slice(0, 10)}.pdf`;
+      doc.save(filename);
+    } catch (err) {
+      console.error("[exportPDF/new] falló, fallback a legado:", err);
+      if (legacyExportPDF) await legacyExportPDF.call(window);
+    }
+  };
+
+  console.info(
+    "[control-flotilla] USE_NEW_PDF activo — exportPDF usa src/pdf/unitReport.ts. " +
+    "Desactiva con: localStorage.removeItem('USE_NEW_PDF')",
   );
 }
