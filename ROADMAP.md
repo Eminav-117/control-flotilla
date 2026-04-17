@@ -181,10 +181,10 @@ Tests totales: 148 → **178** (+30 en P3).
 | Sub-tab | Legado fn | Módulo TS | Status |
 |---------|-----------|-----------|--------|
 | Hallazgos/Checklist | `renderChecklist` | `src/ui/detail/renderChecklist.ts` | ✅ 2026-04-17 (16 tests) |
-| Llantas TACO | inline `renderDetBody` case "t" | — | ⏳ |
+| Llantas TACO | inline `renderDetBody` case "t" | `src/ui/detail/renderTires.ts` | ✅ 2026-04-17 (15 tests) |
 | Fotos + lightbox | `renderPhotos`, `lbOpen/lbNav/lbClose` | — | ⏳ |
 | Notas | `renderNotes` | `src/ui/detail/renderNotes.ts` | ✅ 2026-04-17 (14 tests) |
-| Acciones correctivas | `renderActionsTab`, `addAction`, etc. | — | ⏳ |
+| Acciones correctivas | `renderActionsTab`, `addAction`, etc. | `src/ui/detail/renderActions.ts` | ✅ 2026-04-17 (17 tests) |
 | Servicio/Historial | `renderDetBody` case "o" | — | ⏳ |
 
 ### P4 original (Corte definitivo) — referencia

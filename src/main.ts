@@ -14,6 +14,12 @@
 import { renderTable as renderTableNew } from "./ui/renderTable";
 import { renderChecklist as renderChecklistNew } from "./ui/detail/renderChecklist";
 import { renderNotes as renderNotesNew, type NotesDB, type NoteType } from "./ui/detail/renderNotes";
+import { renderTires as renderTiresNew } from "./ui/detail/renderTires";
+import {
+  renderActions as renderActionsNew,
+  type ActionsDB,
+  type ActionStatus,
+} from "./ui/detail/renderActions";
 import { buildUnitReport } from "./pdf/unitReport";
 import { appStore, bindLegacyWindow } from "./state/appState";
 import {
@@ -38,11 +44,17 @@ declare global {
     exportPDF?: () => void | Promise<void>;
     renderChecklist?: (u: Unit, body: HTMLElement) => void;
     renderNotes?: (u: Unit, body: HTMLElement) => void;
+    renderActionsTab?: (u: Unit, body: HTMLElement) => void;
     toggleCheckItem?: (uid: string, text: string) => void;
     addNote?: (uid: string) => void;
     deleteNote?: (uid: string, noteId: string) => void;
+    addAction?: (uid: string, findingText: string) => void;
+    updateActionStatus?: (uid: string, actionId: string, newStatus: string) => void;
+    deleteAction?: (uid: string, actionId: string) => void;
     notesDB?: NotesDB;
+    actionsDB?: ActionsDB;
     saveNotes?: (uid: string) => Promise<void>;
+    saveActions?: (uid: string) => Promise<void>;
     renderDet?: () => void;
     filt?: () => Unit[];
     /** flag interno para detectar si el module-script se cargó. */
@@ -191,8 +203,34 @@ if (readFlag("USE_NEW_DETAIL")) {
     }
   };
 
+  const legacyRenderActions = window.renderActionsTab;
+  window.renderActionsTab = function renderActionsShim(u: Unit, body: HTMLElement) {
+    try {
+      renderActionsNew(body, {
+        unit: u,
+        actionsDB: window.actionsDB,
+        onAdd: (uid) => window.addAction?.(uid, ""),
+        onUpdateStatus: (uid, actionId, newStatus) =>
+          window.updateActionStatus?.(uid, actionId, newStatus as ActionStatus),
+        onDelete: (uid, actionId) => window.deleteAction?.(uid, actionId),
+      });
+    } catch (err) {
+      console.error("[renderActionsTab/new] falló, fallback a legado:", err);
+      if (legacyRenderActions) legacyRenderActions(u, body);
+    }
+  };
+
+  // Tires NO es función separada en legado — es inline en renderDetBody.
+  // Exponemos como función por si se quiere wire directo. El legado switch
+  // sigue usando su inline render; para activar el nuestro requiere refactor
+  // del renderDetBody (futuro — por ahora renderTires está listo para usar).
+  (window as unknown as { renderTires?: (u: Unit, body: HTMLElement) => void }).renderTires =
+    function (u: Unit, body: HTMLElement) {
+      renderTiresNew(body, { unit: u });
+    };
+
   console.info(
-    "[control-flotilla] USE_NEW_DETAIL activo — sub-tabs Checklist + Notas usan src/ui/detail/. " +
+    "[control-flotilla] USE_NEW_DETAIL activo — sub-tabs Checklist + Notas + Acciones + Tires usan src/ui/detail/. " +
       "Desactiva con: localStorage.removeItem('USE_NEW_DETAIL')",
   );
 }
