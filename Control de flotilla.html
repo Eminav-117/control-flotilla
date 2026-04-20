@@ -2469,40 +2469,44 @@ function renderDetBody(u){
   }
 
   else if(curTab==="o"){
-    const obsCards=(()=>{
-      const arr=u.obsArr&&u.obsArr.length?u.obsArr:(u.obs?[u.obs]:[]);
-      if(!arr.length) return`<div style="color:var(--s3);font-size:11px;padding:12px 0;text-align:center">Sin observaciones registradas.</div>`;
-      return`<div class="catttl" style="display:flex;align-items:center;gap:6px"><i data-lucide="message-square" style="width:12px;height:12px"></i> Comentarios del responsable${arr.length>1?` <span style="font-size:9px;background:var(--Bd);color:var(--B);padding:1px 8px;border-radius:4px;font-weight:700">${arr.length}</span>`:"" }</div>`+
-        arr.map((t,i)=>`<div class="obscard">
-          ${arr.length>1?`<div class="obscard-hdr"><span class="obscard-n">Comentario ${i+1} de ${arr.length}</span></div>`:""}
-          <div class="obscard-txt">${escHtml(t)}</div>
-        </div>`).join("");
-    })();
-    // ── Cross-reference: última revisión semanal para esta unidad ─
-    const latestWeekly = weeklyPeriodos.flatMap(p=>p.entries.map(e=>({...e,_periodo:p.label})))
-      .filter(e=>e.uid===u.uid||(e.eco&&e.eco===u.eco)||(e.plate&&u.plate&&e.plate===u.plate))
-      .sort((a,b)=>(b._periodo||"").localeCompare(a._periodo||""))[0]||null;
-    const weeklyCard = latestWeekly ? `<div class="sw-svccard">
-      <div class="sw-svccard-ttl" style="display:flex;align-items:center;gap:6px"><i data-lucide="clipboard-list" style="width:13px;height:13px"></i> Última revisión semanal · ${escHtml(latestWeekly._periodo)}</div>
-      <div class="sw-svcrow"><span>Fecha</span><span class="sw-svcval">${escHtml(latestWeekly.fecha||"—")}</span></div>
-      <div class="sw-svcrow">
-        <span>Aceite Motor</span>
-        <span class="sw-svcval" style="color:${latestWeekly.aceiteRisk==="Urgente"?"var(--R)":latestWeekly.aceiteRisk==="Revisar"?"var(--A)":"var(--G)"}">${escHtml(latestWeekly.aceite||latestWeekly.aceiteRisk)}</span>
-      </div>
-      <div class="sw-svcrow">
-        <span>Radiador</span>
-        <span class="sw-svcval" style="color:${latestWeekly.radiadorRisk==="Urgente"?"var(--R)":latestWeekly.radiadorRisk==="Revisar"?"var(--A)":"var(--G)"}">${escHtml(latestWeekly.radiador||latestWeekly.radiadorRisk)}</span>
-      </div>
-    </div>` : "";
-
-    body.innerHTML=`<div style="margin-bottom:12px">${obsCards}
-    </div>${(u.lastSvc||u.nextSvc||u.kmNextSvc)?`<div class="svccard">
-      <div class="svcttl">Historial de servicio</div>
-      ${u.lastSvc?`<div class="svcrow"><span>Último servicio</span><span class="svcval">${escHtml(u.lastSvc)}</span></div>`:""}
-      ${u.nextSvc?`<div class="svcrow"><span>Próximo servicio</span><span class="svcval" style="color:var(--A)">${escHtml(u.nextSvc)}</span></div>`:""}
-      ${u.kmNextSvc?`<div class="svcrow"><span>KM del próximo</span><span class="svcval">${Number(u.kmNextSvc).toLocaleString("es-MX")} km</span></div>`:""}
-    </div>`:""}${weeklyCard}`;
+    renderService(u, body);
   }
+}
+
+function renderService(u, body){
+  const obsCards=(()=>{
+    const arr=u.obsArr&&u.obsArr.length?u.obsArr:(u.obs?[u.obs]:[]);
+    if(!arr.length) return`<div style="color:var(--s3);font-size:11px;padding:12px 0;text-align:center">Sin observaciones registradas.</div>`;
+    return`<div class="catttl" style="display:flex;align-items:center;gap:6px"><i data-lucide="message-square" style="width:12px;height:12px"></i> Comentarios del responsable${arr.length>1?` <span style="font-size:9px;background:var(--Bd);color:var(--B);padding:1px 8px;border-radius:4px;font-weight:700">${arr.length}</span>`:"" }</div>`+
+      arr.map((t,i)=>`<div class="obscard">
+        ${arr.length>1?`<div class="obscard-hdr"><span class="obscard-n">Comentario ${i+1} de ${arr.length}</span></div>`:""}
+        <div class="obscard-txt">${escHtml(t)}</div>
+      </div>`).join("");
+  })();
+  // ── Cross-reference: última revisión semanal para esta unidad ─
+  const latestWeekly = weeklyPeriodos.flatMap(p=>p.entries.map(e=>({...e,_periodo:p.label})))
+    .filter(e=>e.uid===u.uid||(e.eco&&e.eco===u.eco)||(e.plate&&u.plate&&e.plate===u.plate))
+    .sort((a,b)=>(b._periodo||"").localeCompare(a._periodo||""))[0]||null;
+  const weeklyCard = latestWeekly ? `<div class="sw-svccard">
+    <div class="sw-svccard-ttl" style="display:flex;align-items:center;gap:6px"><i data-lucide="clipboard-list" style="width:13px;height:13px"></i> Última revisión semanal · ${escHtml(latestWeekly._periodo)}</div>
+    <div class="sw-svcrow"><span>Fecha</span><span class="sw-svcval">${escHtml(latestWeekly.fecha||"—")}</span></div>
+    <div class="sw-svcrow">
+      <span>Aceite Motor</span>
+      <span class="sw-svcval" style="color:${latestWeekly.aceiteRisk==="Urgente"?"var(--R)":latestWeekly.aceiteRisk==="Revisar"?"var(--A)":"var(--G)"}">${escHtml(latestWeekly.aceite||latestWeekly.aceiteRisk)}</span>
+    </div>
+    <div class="sw-svcrow">
+      <span>Radiador</span>
+      <span class="sw-svcval" style="color:${latestWeekly.radiadorRisk==="Urgente"?"var(--R)":latestWeekly.radiadorRisk==="Revisar"?"var(--A)":"var(--G)"}">${escHtml(latestWeekly.radiador||latestWeekly.radiadorRisk)}</span>
+    </div>
+  </div>` : "";
+
+  body.innerHTML=`<div style="margin-bottom:12px">${obsCards}
+  </div>${(u.lastSvc||u.nextSvc||u.kmNextSvc)?`<div class="svccard">
+    <div class="svcttl">Historial de servicio</div>
+    ${u.lastSvc?`<div class="svcrow"><span>Último servicio</span><span class="svcval">${escHtml(u.lastSvc)}</span></div>`:""}
+    ${u.nextSvc?`<div class="svcrow"><span>Próximo servicio</span><span class="svcval" style="color:var(--A)">${escHtml(u.nextSvc)}</span></div>`:""}
+    ${u.kmNextSvc?`<div class="svcrow"><span>KM del próximo</span><span class="svcval">${Number(u.kmNextSvc).toLocaleString("es-MX")} km</span></div>`:""}
+  </div>`:""}${weeklyCard}`;
 }
 
 // ════════════════════════════════════════════════════════════

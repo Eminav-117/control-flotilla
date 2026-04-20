@@ -1,6 +1,6 @@
 # Plan de Cutover — Control Flotilla
 
-**Estado 2026-04-17**: P0 + P1 + P2 + P3 completos + P4 Fases 2-4 con módulos TS nuevos detrás de feature flags. Cutover diferido hasta decisiones de negocio.
+**Estado 2026-04-20**: P0 + P1 + P2 + P3 completos + P4 Fases 2-4 completas (6/6 sub-tabs detalle, taller 3/3, semanales + períodos 4/4) detrás de feature flags. Cutover diferido hasta decisiones de negocio.
 
 ---
 
@@ -8,7 +8,7 @@
 
 | Item | Valor |
 |------|-------|
-| Tests | **320/320 pass** |
+| Tests | **507/507 pass** |
 | Coverage statements | 95%+ |
 | Lint | 0 errors |
 | Typecheck | clean |
@@ -67,7 +67,9 @@
 ```js
 localStorage.setItem('USE_NEW_RENDER', '1');   // tabla Inspecciones
 localStorage.setItem('USE_NEW_PDF', '1');      // PDF export
-localStorage.setItem('USE_NEW_DETAIL', '1');   // sub-tabs detalle (5/6)
+localStorage.setItem('USE_NEW_DETAIL', '1');   // sub-tabs detalle (6/6: Checklist, Llantas, Fotos, Notas, Acciones, Servicio)
+localStorage.setItem('USE_NEW_TALLER', '1');   // Taller Activas + Historial + KPIs
+localStorage.setItem('USE_NEW_WEEKLY', '1');   // Semanales (tabla + KPIs + chips) + Períodos mensuales
 localStorage.setItem('USE_URL_STATE', '1');    // deep-link URL
 localStorage.setItem('USE_STORE_LOG', '1');    // debug cambios store
 ```
@@ -155,15 +157,11 @@ git push origin main --tags
 
 ### Bloqueadores
 
-1. **Fotos + lightbox no migrado** (P4.2)
-   - Opción: portarlo (requiere diseño lightbox global + lazy observer + blob management)
-   - Opción: dejarlo en legado permanentemente (funciona bien)
-   - Decisión: **dejar en legado** si no hay issues reportados en beta
-
-2. **Renderers Taller/Semanales no migrados** (P4.3-4)
-   - Solo lógica pura portada
-   - Legado sigue rendering estas tabs
-   - Decisión: cutover PARCIAL — tabs Inspecciones 100% TS, resto coexisten
+Ninguno pendiente a nivel técnico. Fases 2-4 completas:
+- Panel detalle: 6/6 sub-tabs migrados (Checklist, Llantas, Fotos+lightbox, Notas, Acciones, Servicio)
+- Taller: Activas + Historial + KPI bar + donut + alert strip
+- Semanales: tabla + KPIs + chips
+- Períodos mensuales: chips con agrupación por año + tendencias
 
 ### No-bloqueadores (cosmético/follow-up)
 

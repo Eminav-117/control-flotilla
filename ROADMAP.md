@@ -169,7 +169,7 @@ Tests totales: 148 → **178** (+30 en P3).
 | Fase | Estado | Scope |
 |------|--------|-------|
 | Fase 1 — Hardening (P0+P1+P2+P3) | ✅ completa 2026-04-16 | deps, tests, CI, store, loaders, render-table, pdf, CSS extract |
-| Fase 2 — Panel detalle | 🟡 en progreso | Checklist done (2026-04-17). Pendientes: Llantas, Fotos, Notas, Acciones, Servicio |
+| Fase 2 — Panel detalle | ✅ 2026-04-20 — 6/6 sub-tabs wired | Checklist/Llantas/Fotos/Notas/Acciones/Servicio en `src/ui/detail/` bajo `USE_NEW_DETAIL` |
 | Fase 3 — Taller completo | ✅ 2026-04-20 — renderActivas + renderHistorial + renderActivasKpis | `src/taller/tallerStore.ts` + `renderActivas.ts` + `renderHistorial.ts` + `renderActivasKpis.ts` + 118 tests |
 | Fase 4 — Semanales + Períodos | ✅ 2026-04-20 — renderTableSemanales + renderKpisSemanales + renderPeriodoBar (mensual+semanal) | `src/weekly/renderTableSemanales.ts` + `renderKpisSemanales.ts` + `renderPeriodoBar.ts` + 72 nuevos tests. Shim `USE_NEW_WEEKLY` en main.ts |
 | Cutover final | ⏳ decisiones de negocio | Plan detallado: [docs/CUTOVER_PLAN.md](docs/CUTOVER_PLAN.md) |

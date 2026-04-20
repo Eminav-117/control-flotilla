@@ -26,6 +26,11 @@ import {
   type ActionsDB,
   type ActionStatus,
 } from "./ui/detail/renderActions";
+import {
+  renderService as renderServiceNew,
+  type UnitSvc,
+  type WeeklyPeriodo as WeeklyPeriodoSvc,
+} from "./ui/detail/renderService";
 import { buildUnitReport } from "./pdf/unitReport";
 import { renderActivas as renderActivasNew } from "./taller/renderActivas";
 import { renderActivasKpis as renderActivasKpisNew } from "./taller/renderActivasKpis";
@@ -71,6 +76,7 @@ declare global {
     renderChecklist?: (u: Unit, body: HTMLElement) => void;
     renderNotes?: (u: Unit, body: HTMLElement) => void;
     renderActionsTab?: (u: Unit, body: HTMLElement) => void;
+    renderService?: (u: Unit, body: HTMLElement) => void;
     renderPhotos?: (u: Unit, body: HTMLElement) => void;
     imgUrl?: (fname: string) => string | null;
     manualPhotoUrl?: (data: Uint8Array | string, cacheKey: string) => string;
@@ -321,6 +327,19 @@ if (readFlag("USE_NEW_DETAIL")) {
     }
   };
 
+  const legacyRenderService = window.renderService;
+  window.renderService = function renderServiceShim(u: Unit, body: HTMLElement) {
+    try {
+      renderServiceNew(body, {
+        unit: u as UnitSvc,
+        weeklyPeriodos: (window.weeklyPeriodos ?? []) as unknown as WeeklyPeriodoSvc[],
+      });
+    } catch (err) {
+      console.error("[renderService/new] falló, fallback a legado:", err);
+      if (legacyRenderService) legacyRenderService(u, body);
+    }
+  };
+
   // Tires NO es función separada en legado — es inline en renderDetBody.
   // Exponemos como función por si se quiere wire directo. El legado switch
   // sigue usando su inline render; para activar el nuestro requiere refactor
@@ -331,7 +350,7 @@ if (readFlag("USE_NEW_DETAIL")) {
     };
 
   console.info(
-    "[control-flotilla] USE_NEW_DETAIL activo — sub-tabs Checklist + Notas + Acciones + Tires + Fotos usan src/ui/detail/. " +
+    "[control-flotilla] USE_NEW_DETAIL activo — sub-tabs Checklist + Notas + Acciones + Tires + Fotos + Servicio usan src/ui/detail/. " +
       "Lightbox global en window.__lightbox. Desactiva con: localStorage.removeItem('USE_NEW_DETAIL')",
   );
 }
