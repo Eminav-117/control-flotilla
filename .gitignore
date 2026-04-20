@@ -12,6 +12,9 @@ temp_semanal/
 *.backup.html
 Control vehicular Semanal ROF-export.zip
 Seguimiento de unidades en el taller.xlsx
+
+# Fixtures de smoke test servidos por Vite (no se commiten: son binarios grandes)
+public/
 _legacy/
 .husky/_
 
