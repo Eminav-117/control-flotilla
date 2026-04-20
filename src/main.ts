@@ -35,6 +35,18 @@ import {
 } from "./taller/renderHistorial";
 import type { SortKey as TallerSortKey } from "./taller/tallerStore";
 import type { TallerEntry } from "./taller/types";
+import {
+  renderTableSemanales as renderTableSemanalesNew,
+  type WeeklyRiskFilter,
+  type WeeklySortCol,
+} from "./weekly/renderTableSemanales";
+import { renderKpisSemanales as renderKpisSemanalesNew } from "./weekly/renderKpisSemanales";
+import {
+  renderPeriodoBar as renderPeriodoBarNew,
+  renderWeeklyPeriodoBar as renderWeeklyPeriodoBarNew,
+  type MonthlyPeriodo,
+} from "./weekly/renderPeriodoBar";
+import type { WeeklyPeriodo } from "./weekly/weeklyStore";
 import { appStore, bindLegacyWindow } from "./state/appState";
 import {
   type FilterState,
@@ -106,6 +118,29 @@ declare global {
     renderHistorial?: () => void;
     reingresoDesdeHistorial?: (unitKey: string) => void;
     refreshIcons?: () => void;
+    /** Weekly (Semanales) legacy state + callbacks — leídos por el shim. */
+    weeklyPeriodos?: WeeklyPeriodo[];
+    activeWeeklyPeriodoId?: string | null;
+    weeklyHasZip?: boolean;
+    swCurF?: WeeklyRiskFilter;
+    swSortCol?: WeeklySortCol;
+    swSortDir?: 1 | -1;
+    swSort?: (col: WeeklySortCol) => void;
+    swSetF?: (bucket: WeeklyRiskFilter) => void;
+    switchWeeklyPeriodo?: (id: string) => void;
+    deleteWeeklyPeriodo?: (id: string) => void;
+    openSwPhotos?: (uid: string) => void;
+    enviarATallerDesdeInspeccion?: (uid: string) => void;
+    renderSemanales?: () => void;
+    renderTableSemanales?: () => void;
+    buildKPIsSemanales?: () => void;
+    renderWeeklyPeriodoBar?: () => void;
+    /** Monthly período bar legacy state + callbacks. */
+    periodos?: MonthlyPeriodo[];
+    activePeriodoId?: string | null;
+    switchPeriodo?: (id: string) => void;
+    deletePeriodo?: (id: string) => void;
+    renderPeriodoBar?: () => void;
   }
 }
 
@@ -432,6 +467,142 @@ if (readFlag("USE_NEW_TALLER")) {
   console.info(
     "[control-flotilla] USE_NEW_TALLER activo — Activas e Historial usan src/taller/*.ts. " +
       "Desactiva con: localStorage.removeItem('USE_NEW_TALLER')",
+  );
+}
+
+// ─── Feature flag: Semanales + Períodos (P4 fase 4) ──────────────────
+if (readFlag("USE_NEW_WEEKLY")) {
+  const legacyRenderTableSemanales = window.renderTableSemanales;
+  const legacyBuildKPIsSemanales = window.buildKPIsSemanales;
+  const legacyRenderWeeklyPeriodoBar = window.renderWeeklyPeriodoBar;
+  const legacyRenderPeriodoBar = window.renderPeriodoBar;
+
+  const WEEKLY_SORT_KEYS: Set<string> = new Set([
+    "_idx",
+    "eco",
+    "plate",
+    "km",
+    "branch",
+    "aceiteRisk",
+    "radiadorRisk",
+    "carroceriaRisk",
+    "llantaRisk",
+    "risk",
+    "responsable",
+    "fecha",
+  ]);
+
+  function activeWeeklyPeriodo(): WeeklyPeriodo | undefined {
+    const list = window.weeklyPeriodos ?? [];
+    const id = window.activeWeeklyPeriodoId;
+    return list.find((p) => p.id === id);
+  }
+
+  window.renderTableSemanales = function renderTableSemanalesShim() {
+    const tbody = document.getElementById("sw-tbody");
+    if (!tbody) {
+      legacyRenderTableSemanales?.();
+      return;
+    }
+    try {
+      const rawSort = window.swSortCol ?? "risk";
+      const sortCol = (WEEKLY_SORT_KEYS.has(rawSort) ? rawSort : "risk") as WeeklySortCol;
+      const searchEl = document.getElementById("sw-srch") as HTMLInputElement | null;
+      renderTableSemanalesNew({
+        tbody,
+        theadRow: document.getElementById("sw-thead-row"),
+        table: document.getElementById("sw-table"),
+        empty: document.getElementById("sw-empty"),
+        rcnt: document.getElementById("sw-rcnt"),
+        selSuc: document.getElementById("sw-filt-suc") as HTMLSelectElement | null,
+        periodo: activeWeeklyPeriodo(),
+        filter: {
+          riskFilter: window.swCurF ?? "all",
+          sucursal:
+            (document.getElementById("sw-filt-suc") as HTMLSelectElement | null)?.value ?? "all",
+          search: searchEl?.value?.trim() ?? "",
+        },
+        sortCol,
+        sortDir: window.swSortDir ?? -1,
+        hasZipPhotos: Boolean(window.weeklyHasZip),
+        onPhotos: (uid) => window.openSwPhotos?.(uid),
+        onEnviarATaller: (uid) => window.enviarATallerDesdeInspeccion?.(uid),
+        onSort: (col) => window.swSort?.(col),
+      });
+      window.refreshIcons?.();
+    } catch (err) {
+      console.error("[renderTableSemanales/new] falló, fallback a legado:", err);
+      legacyRenderTableSemanales?.();
+    }
+  };
+
+  window.buildKPIsSemanales = function buildKPIsSemanalesShim() {
+    const container = document.getElementById("sw-kpis");
+    if (!container) {
+      legacyBuildKPIsSemanales?.();
+      return;
+    }
+    try {
+      renderKpisSemanalesNew({
+        container,
+        periodo: activeWeeklyPeriodo(),
+        onFilter: (bucket) => window.swSetF?.(bucket),
+      });
+      window.refreshIcons?.();
+    } catch (err) {
+      console.error("[buildKPIsSemanales/new] falló, fallback a legado:", err);
+      legacyBuildKPIsSemanales?.();
+    }
+  };
+
+  window.renderWeeklyPeriodoBar = function renderWeeklyPeriodoBarShim() {
+    const chips = document.getElementById("sw-periodo-chips");
+    if (!chips) {
+      legacyRenderWeeklyPeriodoBar?.();
+      return;
+    }
+    try {
+      renderWeeklyPeriodoBarNew({
+        chips,
+        periodos: window.weeklyPeriodos ?? [],
+        activeId: window.activeWeeklyPeriodoId ?? null,
+        onSwitch: (id) => window.switchWeeklyPeriodo?.(id),
+        onDelete: (id) => window.deleteWeeklyPeriodo?.(id),
+      });
+      window.refreshIcons?.();
+    } catch (err) {
+      console.error("[renderWeeklyPeriodoBar/new] falló, fallback a legado:", err);
+      legacyRenderWeeklyPeriodoBar?.();
+    }
+  };
+
+  window.renderPeriodoBar = function renderPeriodoBarShim() {
+    const bar = document.getElementById("periodo-bar");
+    const chips = document.getElementById("periodo-chips");
+    if (!bar || !chips) {
+      legacyRenderPeriodoBar?.();
+      return;
+    }
+    try {
+      renderPeriodoBarNew({
+        bar,
+        chips,
+        btnTendencias: document.getElementById("btn-tendencias"),
+        periodos: window.periodos ?? [],
+        activeId: window.activePeriodoId ?? null,
+        onSwitch: (id) => window.switchPeriodo?.(id),
+        onDelete: (id) => window.deletePeriodo?.(id),
+      });
+      window.refreshIcons?.();
+    } catch (err) {
+      console.error("[renderPeriodoBar/new] falló, fallback a legado:", err);
+      legacyRenderPeriodoBar?.();
+    }
+  };
+
+  console.info(
+    "[control-flotilla] USE_NEW_WEEKLY activo — Semanales (tabla, KPIs, chips) + Períodos mensuales usan src/weekly/*.ts. " +
+      "Desactiva con: localStorage.removeItem('USE_NEW_WEEKLY')",
   );
 }
 

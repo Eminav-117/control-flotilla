@@ -23,13 +23,21 @@ export type WeeklyEntry = {
   uid: string;
   eco?: string;
   plate?: string;
+  brand?: string;
   branch?: string;
   fecha?: string;
+  km?: number | string;
+  responsable?: string;
   aceiteRisk?: RiskLevel;
   radiadorRisk?: RiskLevel;
   carroceriaRisk?: RiskLevel;
   llantaRisk?: RiskLevel;
+  aceite?: string;
+  radiador?: string;
+  carroceria?: string;
+  llanta?: string;
   risk?: RiskLevel;
+  photos?: string[];
 };
 
 export type Unit = {
