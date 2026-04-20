@@ -1,6 +1,6 @@
 # Plan de Cutover — Control Flotilla
 
-**Estado 2026-04-20**: P0 + P1 + P2 + P3 completos + P4 Fases 2-4 completas (6/6 sub-tabs detalle, taller 3/3, semanales + períodos 4/4) detrás de feature flags. Cutover diferido hasta decisiones de negocio.
+**Estado 2026-04-20**: P0 + P1 + P2 + P3 completos + P4 Fases 2-4 completas (5/5 sub-tabs detalle expuestos + módulo Acciones listo sin UI, taller 3/3, semanales + períodos 4/4) detrás de feature flags. Smoke test Playwright verde contra dev server con datos reales (28 units mensuales, 59 taller, 29 weekly): parity verificada tras fix de bridge legado ↔ window ↔ appStore (commit `ef64f92`). Cutover diferido hasta decisiones de negocio.
 
 ---
 
@@ -67,7 +67,7 @@
 ```js
 localStorage.setItem('USE_NEW_RENDER', '1');   // tabla Inspecciones
 localStorage.setItem('USE_NEW_PDF', '1');      // PDF export
-localStorage.setItem('USE_NEW_DETAIL', '1');   // sub-tabs detalle (6/6: Checklist, Llantas, Fotos, Notas, Acciones, Servicio)
+localStorage.setItem('USE_NEW_DETAIL', '1');   // sub-tabs detalle (5/5 expuestos: Checklist, Llantas, Fotos, Notas, Servicio; Acciones migrado pero no montado)
 localStorage.setItem('USE_NEW_TALLER', '1');   // Taller Activas + Historial + KPIs
 localStorage.setItem('USE_NEW_WEEKLY', '1');   // Semanales (tabla + KPIs + chips) + Períodos mensuales
 localStorage.setItem('USE_URL_STATE', '1');    // deep-link URL
@@ -158,16 +158,18 @@ git push origin main --tags
 ### Bloqueadores
 
 Ninguno pendiente a nivel técnico. Fases 2-4 completas:
-- Panel detalle: 6/6 sub-tabs migrados (Checklist, Llantas, Fotos+lightbox, Notas, Acciones, Servicio)
+- Panel detalle: 5/5 sub-tabs expuestos migrados (Checklist, Llantas, Fotos+lightbox, Notas, Servicio). Módulo `renderActions` migrado con 17 tests pero la UI legada solo monta 5 sub-tabs — decidir pre-cutover si se expone como sub-tab "Acciones" o se integra a Notas.
 - Taller: Activas + Historial + KPI bar + donut + alert strip
 - Semanales: tabla + KPIs + chips
 - Períodos mensuales: chips con agrupación por año + tendencias
+- Bridge legado ↔ window ↔ appStore verificado con smoke test Playwright (28 units mensuales + 59 taller + 29 weekly). Fix en commit `ef64f92`.
 
 ### No-bloqueadores (cosmético/follow-up)
 
 - `_legacy/` folders con proyectos alternos (fleet-viewer, gpa-fleet-command)
 - OneDrive mirror dual (CLAUDE BRAIN/ viejo + CLAUDE BRAIN/VAULT nuevo)
 - 9 vulns dev-only (workbox-build chain, sin runtime exposure)
+- Race init semanales: `loadSemanalesDB` solo corre dentro del restore de mensual. Si usuario entra sin mensual en IndexedDB, chip bar queda vacío hasta recarga manual tras upload. Legado, no migración.
 
 ---
 

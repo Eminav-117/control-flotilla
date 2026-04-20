@@ -169,7 +169,7 @@ Tests totales: 148 → **178** (+30 en P3).
 | Fase | Estado | Scope |
 |------|--------|-------|
 | Fase 1 — Hardening (P0+P1+P2+P3) | ✅ completa 2026-04-16 | deps, tests, CI, store, loaders, render-table, pdf, CSS extract |
-| Fase 2 — Panel detalle | ✅ 2026-04-20 — 6/6 sub-tabs wired | Checklist/Llantas/Fotos/Notas/Acciones/Servicio en `src/ui/detail/` bajo `USE_NEW_DETAIL` |
+| Fase 2 — Panel detalle | ✅ 2026-04-20 — 5/5 sub-tabs expuestos wired | Checklist/Llantas/Fotos/Notas/Servicio en `src/ui/detail/` bajo `USE_NEW_DETAIL`. Acciones migrado (módulo + 17 tests) pero sin sub-tab en UI legada |
 | Fase 3 — Taller completo | ✅ 2026-04-20 — renderActivas + renderHistorial + renderActivasKpis | `src/taller/tallerStore.ts` + `renderActivas.ts` + `renderHistorial.ts` + `renderActivasKpis.ts` + 118 tests |
 | Fase 4 — Semanales + Períodos | ✅ 2026-04-20 — renderTableSemanales + renderKpisSemanales + renderPeriodoBar (mensual+semanal) | `src/weekly/renderTableSemanales.ts` + `renderKpisSemanales.ts` + `renderPeriodoBar.ts` + 72 nuevos tests. Shim `USE_NEW_WEEKLY` en main.ts |
 | Cutover final | ⏳ decisiones de negocio | Plan detallado: [docs/CUTOVER_PLAN.md](docs/CUTOVER_PLAN.md) |
@@ -194,7 +194,7 @@ Feature flag: `localStorage.setItem('USE_NEW_TALLER','1')`. Shim en `main.ts` le
 | Llantas TACO | inline `renderDetBody` case "t" | `src/ui/detail/renderTires.ts` | ✅ 2026-04-17 (15 tests) |
 | Fotos + lightbox | `renderPhotos`, `lbOpen/lbNav/lbClose` | `src/ui/detail/photoGallery.ts` + `lightbox.ts` | ✅ 2026-04-17 (35 tests) |
 | Notas | `renderNotes` | `src/ui/detail/renderNotes.ts` | ✅ 2026-04-17 (14 tests) |
-| Acciones correctivas | `renderActionsTab`, `addAction`, etc. | `src/ui/detail/renderActions.ts` | ✅ 2026-04-17 (17 tests) |
+| Acciones correctivas | `renderActionsTab`, `addAction`, etc. | `src/ui/detail/renderActions.ts` | ✅ 2026-04-17 (17 tests) — módulo listo pero sub-tab no expuesto en UI legada (solo 5 tabs en `dtabs`) |
 | Servicio/Historial | `renderDetBody` case "o" | `src/ui/detail/renderService.ts` | ✅ 2026-04-17 (12 tests) |
 
 ### P4 original (Corte definitivo) — referencia
