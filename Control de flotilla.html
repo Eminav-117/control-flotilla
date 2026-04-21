@@ -1491,12 +1491,19 @@ const isUnitEnTaller = u =>
   unitsEnTaller.has(String(u.eco||"").toLowerCase().trim()) ||
   unitsEnTaller.has(String(u.plate||"").toLowerCase().trim());
 
+// Modelo C-mod: filtros por nivel matchean unidades con AL MENOS un pending
+// del nivel (descontando atendidos via checklistDB). Overlap permitido entre
+// chips Urgente/Revisar/Completar. Chip "OK" = unidades sin pending.
+const _hasPending=(u,lv)=>{const dm=checklistDB[u.uid]||{};return u.F.some(f=>f.lv===lv&&!(dm[f.text]&&dm[f.text].done))};
+const _hasAnyPending=(u)=>{const dm=checklistDB[u.uid]||{};return u.F.some(f=>!(dm[f.text]&&dm[f.text].done))};
 const filt=()=>sortedUnits(units.filter(u=>{
   if(curF==="taller")     return isUnitEnTaller(u);
   if(curF==="svcvencido"){const today1=new Date();today1.setHours(0,0,0,0);const d30b=new Date(today1);d30b.setDate(d30b.getDate()+30);const ds=parseSvcDate(u.nextSvc);return ds&&ds<=d30b;}
   if(curF==="obs"&&!u.obs)return false;
-  if(curF==="Completar"&&!u.F.some(f=>f.lv==="Completar"))return false;
-  if(curF!=="all"&&curF!=="obs"&&curF!=="Completar"&&curF!=="svcvencido"&&u.risk!==curF)return false;
+  if(curF==="Urgente"&&!_hasPending(u,"Urgente"))return false;
+  if(curF==="Revisar"&&!_hasPending(u,"Revisar"))return false;
+  if(curF==="Completar"&&!_hasPending(u,"Completar"))return false;
+  if(curF==="OK"&&_hasAnyPending(u))return false;
   if(curB!=="all"&&u.branch!==curB)return false;
   if(curS){const q=curS.toLowerCase();
     return[u.plate,u.brand,u.insp,u.eco,u.branch,u.area,u.obs].some(v=>String(v||"").toLowerCase().includes(q))}
@@ -2089,14 +2096,29 @@ function buildKPIs(){
   // Single pass — all counters accumulated in one loop
   const today0=new Date();today0.setHours(0,0,0,0);
   const d30=new Date(today0);d30.setDate(d30.getDate()+30);
+  // Modelo C-mod: counter por unidad-con-pending de cada nivel (overlap permitido).
+  // OK = sin pending. Atender un Urg quita unidad de bucket Urg sin "moverla" a otro.
+  // Vars *Donut son EXCLUSIVAS (suman a t) — el donut necesita partir el círculo.
   let u=0,rv=0,cpl=0,comp=0,ok=0,ct=0,enTaller=0,nSvcVencido=0,nSvcProximo=0,withObs=0;
+  let uDonut=0,rvDonut=0,okDonut=0;
   for(let i=0;i<t;i++){
     const x=units[i];
-    if(x.risk==="Urgente") u++;
-    else if(x.risk==="Revisar") rv++;
-    else if(x.risk==="Completar") cpl++;
-    else ok++;
-    if(x.F.some(f=>f.lv==="Completar")) comp++;
+    const dm=checklistDB[x.uid]||{};
+    const pend=x.F.filter(f=>!(dm[f.text]&&dm[f.text].done));
+    const hasU=pend.some(f=>f.lv==="Urgente");
+    const hasR=pend.some(f=>f.lv==="Revisar");
+    const hasC=pend.some(f=>f.lv==="Completar");
+    if(!pend.length) ok++;
+    else {
+      if(hasU) u++;
+      if(hasR) rv++;
+      if(hasC) cpl++;
+    }
+    // Exclusivo para donut
+    if(hasU) uDonut++;
+    else if(hasR) rvDonut++;
+    else okDonut++;
+    if(hasC) comp++;
     if(x.minT!==null&&x.minT<=TCRIT) ct++;
     if(isUnitEnTaller(x)) enTaller++;
     if(x.obs) withObs++;
@@ -2130,12 +2152,11 @@ function buildKPIs(){
   if(btnFleet) btnFleet.style.display=t?"flex":"none";
   const btnResumen=document.getElementById("btn-resumen");
   if(btnResumen) btnResumen.style.display=t?"inline-flex":"none";
-  // donut — 3 segmentos: Urgente / Revisar / Operativa (OK + Completar).
-  // Completar es pendiente admin (foto, doc), no riesgo operativo — va a OK.
-  // Chip "Completar" (fc4) usa solapamiento por hallazgos (variable `comp`), por diseño.
-  const okOp=ok+cpl;
+  // donut — 3 segmentos exclusivos: Urgente / Revisar / Operativa.
+  // Operativa = unidades sin pending Urg ni Rev (incluye Completar pending o todo OK).
+  // Chips son overlap (Modelo C-mod) — donut NO, usa vars *Donut.
   const R=26,cx=32,cy=32,circ=2*Math.PI*R,sw=8;let off=0;
-  const rawSegs=[["u",u,"var(--R)"],["rv",rv,"var(--A)"],["ok",okOp,"var(--G)"]];
+  const rawSegs=[["u",uDonut,"var(--R)"],["rv",rvDonut,"var(--A)"],["ok",okDonut,"var(--G)"]];
   const present=rawSegs.filter(([,v])=>v>0);
   const donutT=Math.max(t,1);
   const gap=present.length>1?circ*0.012:0; // ~2° gap entre segmentos
@@ -2150,7 +2171,7 @@ function buildKPIs(){
   const dp=document.getElementById("dpct");
   const dtag=document.getElementById("dtag");
   // Default = dominant segment (label and % stay consistent)
-  const domSegs=[["URGENTE","var(--R)",u],["REVISAR","var(--A)",rv],["OPERATIVA","var(--G)",okOp]];
+  const domSegs=[["URGENTE","var(--R)",uDonut],["REVISAR","var(--A)",rvDonut],["OPERATIVA","var(--G)",okDonut]];
   const dom=domSegs.reduce((a,b)=>b[2]>a[2]?b:a);
   const domPct=t?Math.round((dom[2]/t)*100):0;
   dp.textContent=domPct+"%";dp.style.color=dom[1];
@@ -2158,7 +2179,7 @@ function buildKPIs(){
     const domBg=dom[1]==="var(--R)"?"#DC262615":dom[1]==="var(--A)"?"#F59E0B15":"#06D6A015";
     dtag.textContent=dom[0];dtag.style.color=dom[1];dtag.style.background=domBg;
   }
-  const legRows=[["u","var(--R)","Urgente",u],["rv","var(--A)","Revisar",rv],["ok","var(--G)","Operativa",okOp]];
+  const legRows=[["u","var(--R)","Urgente",uDonut],["rv","var(--A)","Revisar",rvDonut],["ok","var(--G)","Operativa",okDonut]];
   const dleg=document.getElementById("dleg");
   dleg.title="Urgente · Revisar · Operativa (OK + Completar). Completar es pendiente admin, no riesgo.";
   dleg.innerHTML=
@@ -2167,9 +2188,9 @@ function buildKPIs(){
   const pctOf = n => t ? Math.round((n/t)*100) : 0;
   const DTAG_BG={"var(--R)":"#DC262615","var(--A)":"#F59E0B15","var(--G)":"#06D6A015"};
   const hoverMap={
-    u:{pct:pctOf(u),lbl:"URGENTE",color:"var(--R)"},
-    rv:{pct:pctOf(rv),lbl:"REVISAR",color:"var(--A)"},
-    ok:{pct:pctOf(okOp),lbl:"OPERATIVA",color:"var(--G)"}
+    u:{pct:pctOf(uDonut),lbl:"URGENTE",color:"var(--R)"},
+    rv:{pct:pctOf(rvDonut),lbl:"REVISAR",color:"var(--A)"},
+    ok:{pct:pctOf(okDonut),lbl:"OPERATIVA",color:"var(--G)"}
   };
   const defaultPct=dp.textContent, defaultPctColor=dp.style.color;
   const defaultTag=dtag?{txt:dtag.textContent,color:dtag.style.color,bg:dtag.style.background}:null;
