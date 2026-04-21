@@ -1,5 +1,5 @@
 import type { AnalyzeResult, ExcelRow, Finding, RiskLevel } from "../types";
-import { BIN, RO, TC, TCRIT, TWARN } from "./constants";
+import { BIN, BIN_LABELS, RO, TC, TCRIT, TWARN, isBinFail } from "./constants";
 
 export function analyzeRow(row: ExcelRow): AnalyzeResult {
   const F: Finding[] = [];
@@ -9,17 +9,25 @@ export function analyzeRow(row: ExcelRow): AnalyzeResult {
     if ((RO[r] || 0) > (RO[max] || 0)) max = r;
   };
 
-  const tieneRefaccion =
-    String(row["Llanta de refaccion funcional"] || "")
-      .trim()
-      .toLowerCase() !== "no";
+  // Refacción gating: Excel real usa "Cuenta con llanta de Refacción?" (col AU).
+  // Fallback al nombre legacy para compat con exports viejos.
+  const refRaw = row["Cuenta con llanta de Refacción?"] ?? row["Llanta de refaccion funcional"] ?? "";
+  const tieneRefaccion = String(refRaw).trim().toLowerCase() !== "no";
   if (!tieneRefaccion) {
-    F.push({ cat: "Checklist", text: "Llanta de refaccion funcional", lv: "Completar" });
+    F.push({ cat: "Checklist", text: "Sin llanta de refacción", lv: "Completar" });
     bump("Completar");
   }
 
+  // Gating llantas internas: si "¿Cuenta con...?" === "No" → skip.
+  const tieneIntPiloto =
+    String(row["¿Cuenta con Llanta Piloto trasera INTERNA?"] ?? "").trim().toLowerCase() !== "no";
+  const tieneIntCopiloto =
+    String(row["¿Cuenta con Llanta Copiloto trasera INTERNA?"] ?? "").trim().toLowerCase() !== "no";
+
   for (const [n, c] of Object.entries(TC)) {
     if (n === "Refacción" && !tieneRefaccion) continue;
+    if (n === "Piloto Trasera Int." && !tieneIntPiloto) continue;
+    if (n === "Copiloto Trasera Int." && !tieneIntCopiloto) continue;
     const v = parseFloat(String(row[c] ?? ""));
     if (!isNaN(v)) {
       T[n] = v;
@@ -34,21 +42,13 @@ export function analyzeRow(row: ExcelRow): AnalyzeResult {
   }
 
   for (const [c, r] of Object.entries(BIN)) {
-    if (
-      String(row[c] || "")
-        .trim()
-        .toLowerCase() === "no"
-    ) {
-      F.push({ cat: "Checklist", text: c, lv: r });
+    if (isBinFail(row[c])) {
+      F.push({ cat: "Checklist", text: BIN_LABELS[c] || c, lv: r });
       bump(r);
     }
   }
 
-  if (String(row["Tarjeta de circulacion vigente"] || "").toLowerCase().includes("venci")) {
-    F.push({ cat: "Documentos", text: "Tarjeta de circulación VENCIDA", lv: "Completar" });
-    bump("Completar");
-  }
-
+  // Tarjeta circulación vencida ya capturada por isBinFail (incluye "vencid").
   for (const c of ["Nivel de aceite de motor max", "Nivel de liquido de frenos max"]) {
     if (String(row[c] || "").toLowerCase().includes("bajo")) {
       F.push({ cat: "Fluidos", text: `${c}: nivel BAJO`, lv: "Urgente" });
