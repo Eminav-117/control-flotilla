@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "skills": {
+    "data-visualization": {
+      "source": "anthropics/knowledge-work-plugins",
+      "sourceType": "github",
+      "computedHash": "a238cd5981b2da6bd7ecc24cfb3d7238be993ee5a2ad97acb414f9758aba13dd"
+    },
+    "echarts": {
+      "source": "eng0ai/eng0-template-skills",
+      "sourceType": "github",
+      "computedHash": "c6f13fbab749480317f198054d8cbb7547209aa943165242b074e330006e96a4"
+    },
+    "pdf": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "computedHash": "37226d4220d844377e6b2a386c51a011df4cd130855ff0b80bcc22f9c28abd57"
+    },
+    "performance": {
+      "source": "addyosmani/web-quality-skills",
+      "sourceType": "github",
+      "computedHash": "9e0e29b7919bacfd2d0caae0f841fa53ae3d7b7427d27f4fdbacc76643d7d138"
+    }
+  }
+}

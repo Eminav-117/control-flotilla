@@ -1,0 +1,20 @@
+# Legacy HTML monolito — 5900+ líneas con scripts inline.
+# Prettier parser falla en constructos válidos pero inusuales del legado.
+# Edits manuales; no se autoformatea.
+Control de flotilla.html
+
+# Vendor bundled
+vendor/
+
+# Build output
+dist/
+
+# Coverage reports
+coverage/
+
+# Playwright
+playwright-report/
+test-results/
+
+# Skills externos (formato upstream)
+.claude/skills/

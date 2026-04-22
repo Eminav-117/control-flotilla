@@ -1,7 +1,7 @@
 export type RiskLevel = "Urgente" | "Revisar" | "Completar" | "OK";
 
 export type Finding = {
-  cat: "Llantas" | "Checklist" | "Documentos" | "Fluidos";
+  cat: "Llantas" | "Checklist" | "Documentos" | "Fluidos" | "Mantenimiento";
   text: string;
   lv: RiskLevel;
 };

@@ -11,7 +11,8 @@ export function analyzeRow(row: ExcelRow): AnalyzeResult {
 
   // Refacción gating: Excel real usa "Cuenta con llanta de Refacción?" (col AU).
   // Fallback al nombre legacy para compat con exports viejos.
-  const refRaw = row["Cuenta con llanta de Refacción?"] ?? row["Llanta de refaccion funcional"] ?? "";
+  const refRaw =
+    row["Cuenta con llanta de Refacción?"] ?? row["Llanta de refaccion funcional"] ?? "";
   const tieneRefaccion = String(refRaw).trim().toLowerCase() !== "no";
   if (!tieneRefaccion) {
     F.push({ cat: "Checklist", text: "Sin llanta de refacción funcional", lv: "Revisar" });
@@ -20,9 +21,13 @@ export function analyzeRow(row: ExcelRow): AnalyzeResult {
 
   // Gating llantas internas: si "¿Cuenta con...?" === "No" → skip.
   const tieneIntPiloto =
-    String(row["¿Cuenta con Llanta Piloto trasera INTERNA?"] ?? "").trim().toLowerCase() !== "no";
+    String(row["¿Cuenta con Llanta Piloto trasera INTERNA?"] ?? "")
+      .trim()
+      .toLowerCase() !== "no";
   const tieneIntCopiloto =
-    String(row["¿Cuenta con Llanta Copiloto trasera INTERNA?"] ?? "").trim().toLowerCase() !== "no";
+    String(row["¿Cuenta con Llanta Copiloto trasera INTERNA?"] ?? "")
+      .trim()
+      .toLowerCase() !== "no";
 
   for (const [n, c] of Object.entries(TC)) {
     if (n === "Refacción" && !tieneRefaccion) continue;
@@ -50,16 +55,46 @@ export function analyzeRow(row: ExcelRow): AnalyzeResult {
 
   // Tarjeta circulación vencida ya capturada por isBinFail (incluye "vencid").
   for (const c of ["Nivel de aceite de motor max", "Nivel de liquido de frenos max"]) {
-    if (String(row[c] || "").toLowerCase().includes("bajo")) {
+    if (
+      String(row[c] || "")
+        .toLowerCase()
+        .includes("bajo")
+    ) {
       F.push({ cat: "Fluidos", text: `${c}: nivel BAJO`, lv: "Urgente" });
       bump("Urgente");
     }
   }
 
   for (const c of ["Nivel de liquido de radiador max", "Nivel de aceite de direccion max"]) {
-    if (String(row[c] || "").toLowerCase().includes("bajo")) {
+    if (
+      String(row[c] || "")
+        .toLowerCase()
+        .includes("bajo")
+    ) {
       F.push({ cat: "Fluidos", text: `${c}: nivel bajo`, lv: "Revisar" });
       bump("Revisar");
+    }
+  }
+
+  // 🔮 Predictivo (ADN de Traccar): Alertas por Kilometraje
+  const kmActual = parseFloat(String(row["Kilometraje"] ?? "0"));
+  const kmSiguiente = parseFloat(String(row["Kilometraje del siguiente servicio"] ?? "0"));
+  if (kmSiguiente > 0 && kmActual > 0) {
+    const diff = kmSiguiente - kmActual;
+    if (diff <= 1000 && diff > 0) {
+      F.push({
+        cat: "Mantenimiento",
+        text: `Servicio próximo (${Math.round(diff)}km restantes)`,
+        lv: "Revisar",
+      });
+      bump("Revisar");
+    } else if (diff <= 0) {
+      F.push({
+        cat: "Mantenimiento",
+        text: `Servicio VENCIDO (${Math.abs(Math.round(diff))}km excedidos)`,
+        lv: "Urgente",
+      });
+      bump("Urgente");
     }
   }
 
