@@ -144,23 +144,28 @@ const TIRE_OK = normKws([
   "lista",
 ]);
 
+// Keywords de REVISAR para refacción — normalizadas vía normKws para garantizar
+// que futuros maintainers agreguen tildes/mayúsculas sin romper match (consistencia
+// con FLUID_URG/BODY_URG/TIRE_OK).
+const TIRE_REVISAR = normKws([
+  "sin refaccion",
+  "sin llanta",
+  "falta",
+  "ponchada",
+  "ponchado",
+  "danada",
+  "danado",
+  "no funcional",
+  "mala",
+  "no hay",
+]);
+
 export function normTireRisk(val: unknown): RiskLevel {
   const v = norm(val);
   if (!v) return "OK";
-  if (
-    v === "no" ||
-    v.startsWith("no ") ||
-    v.includes("sin refacc") ||
-    v.includes("sin llanta") ||
-    v.includes("falta") ||
-    v.includes("ponchad") ||
-    v.includes("danad") ||
-    v.includes("danada") ||
-    v.includes("no funcional") ||
-    v.includes("mala") ||
-    v.includes("no hay")
-  )
+  if (v === "no" || v.startsWith("no ") || TIRE_REVISAR.some((kw) => v.includes(kw))) {
     return "Revisar";
+  }
   if (TIRE_OK.some((kw) => v === kw || v.includes(kw))) return "OK";
   return "Revisar";
 }

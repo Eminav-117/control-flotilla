@@ -26,6 +26,31 @@ docker run -d -p 8080:80 --name test-flotilla control-flotilla
 6. Prueba cargar ZIP ≥100MB — `client_max_body_size 200m` debe permitirlo (no `413`).
 7. Test CORS: `fetch("https://cdn.cualquiera.com")` desde DevTools → bloqueado por `connect-src 'self'`.
 
+## 🔐 2.5 TLS / HTTPS (OBLIGATORIO para multi-usuario)
+
+> [!WARNING]
+> La imagen expone **puerto 80 sin TLS** por simplicidad. Si la app va a servirse a más de un usuario
+> o a cualquier equipo fuera del host local, **debes poner TLS delante** o las credenciales/sesión
+> viajarán en claro dentro de la red intranet.
+
+**Opciones recomendadas (orden de menor a mayor fricción):**
+
+1. **Reverse proxy interno existente** (si la empresa tiene nginx/traefik/caddy corporativo):
+   ```
+   https://flotilla.gpa.local  → (TLS terminated) → http://docker-host:80
+   ```
+2. **Caddy en paralelo** (cert self-signed o ACME interno):
+   ```bash
+   docker run -d --name tls-front -p 443:443 -v caddy_data:/data \
+     --link gpa-flotilla:backend caddy caddy reverse-proxy --from :443 --to backend:80
+   ```
+3. **Publicar puerto 443 directo** desde el contenedor requiere rebuild con listen 443 ssl + mount de certs.
+
+**Activar HSTS una vez servido sobre HTTPS:** descomenta la línea en `nginx.conf`:
+```
+add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+```
+
 ## 🌐 3. Despliegue en Servidor de Intranet (Air-gap)
 Si tu servidor interno no tiene acceso a internet para descargar imágenes de Node o Nginx:
 

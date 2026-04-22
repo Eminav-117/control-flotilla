@@ -32,10 +32,17 @@ export class Store<T extends object> {
     return this._state[key];
   }
 
-  /** Actualiza una clave; notifica subscribers globales + por-clave. */
-  set<K extends keyof T>(key: K, value: T[K]): void {
+  /**
+   * Actualiza una clave; notifica subscribers globales + por-clave.
+   *
+   * IMPORTANTE: compara por referencia (`===`). Si mutas un objeto/array en-place
+   * y lo re-asignas con la misma referencia, NO notifica (optimización para evitar
+   * re-renders falsos). Si necesitas forzar notify tras mutación in-place, pasa
+   * `{force:true}` o — preferido — crea nueva referencia (`[...arr]` / `{...obj}`).
+   */
+  set<K extends keyof T>(key: K, value: T[K], opts?: { force?: boolean }): void {
     const prev = this._state;
-    if (prev[key] === value) return;
+    if (!opts?.force && prev[key] === value) return;
     this._state = { ...prev, [key]: value };
     this._emit(prev, [key]);
   }

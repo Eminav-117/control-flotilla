@@ -42,7 +42,9 @@ COPY --from=build /app/dist /usr/share/nginx/html
 EXPOSE 80
 
 # Salud del contenedor — golpea endpoint dedicado /healthz (no SPA index).
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+# timeout=10s tolera picos CPU (workers saturados procesando upload ZIP grande).
+# Antes era 5s — demasiado agresivo, generaba falsos positivos.
+HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
   CMD wget --quiet --tries=1 --spider http://localhost/healthz || exit 1
 
 CMD ["nginx", "-g", "daemon off;"]

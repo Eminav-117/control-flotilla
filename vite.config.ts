@@ -26,14 +26,10 @@ export default defineConfig({
     outDir: "dist",
     target: "es2022",
     sourcemap: "hidden",
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          xlsx: ["xlsx"],
-          jspdf: ["jspdf"],
-        },
-      },
-    },
+    // manualChunks removido: xlsx/jspdf se sirven como ./vendor/*.js standalone,
+    // no se importan en módulos TS actuales. Vite emitía chunks vacíos (0 kB).
+    // Si algún módulo src/ empieza a importar xlsx/jspdf, reintroduce chunks aquí
+    // para aislarlos del bundle principal.
   },
   test: {
     environment: "happy-dom",
