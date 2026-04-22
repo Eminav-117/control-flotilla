@@ -20,7 +20,8 @@
     "audit:deps": "npm audit --omit=dev",
     "audit:all": "npm run audit:deps && npm run audit:xss && npm run audit:baseline",
     "format": "prettier --write \"src/**/*.{ts,js,css,html}\"",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepare": "husky"
   },
   "dependencies": {
     "jspdf": "2.5.1",

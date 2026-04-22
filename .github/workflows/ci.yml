@@ -1,10 +1,18 @@
 name: CI
 
+# NOTA (2026-04-22): Triggers automáticos push/PR DESACTIVADOS temporalmente
+# porque GitHub Actions está pausado por billing. El workflow se mantiene
+# íntegro para reactivar con un simple uncomment cuando el billing se resuelva.
+#
+# Mientras tanto, pre-push husky (.husky/pre-push) corre el mismo pipeline
+# localmente antes de cada push. Para disparar CI manualmente desde GitHub UI:
+# Actions tab → CI → Run workflow.
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+  workflow_dispatch:
+  # push:
+  #   branches: [main]
+  # pull_request:
+  #   branches: [main]
 
 jobs:
   verify:
