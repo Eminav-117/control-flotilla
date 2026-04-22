@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -7,7 +7,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const FIXTURE_MENSUAL = path.resolve(__dirname, "../../public/mensual.xlsx");
 
-async function dismissPeriodoModal(page) {
+async function dismissPeriodoModal(page: Page) {
   // Esperar hasta 3s por modal (puede aparecer async post-render) y cerrar
   await page
     .waitForFunction(
@@ -28,7 +28,7 @@ async function dismissPeriodoModal(page) {
   await expect(page.locator("#periodo-modal.open")).toHaveCount(0, { timeout: 3000 });
 }
 
-async function loadMensual(page) {
+async function loadMensual(page: Page) {
   await page.goto(APP_PATH);
   await page.waitForLoadState("networkidle");
   await page.setInputFiles("#xinput", FIXTURE_MENSUAL);

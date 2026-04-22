@@ -374,9 +374,11 @@ if (readFlag("USE_NEW_DETAIL")) {
   const legacyRenderService = window.renderService;
   window.renderService = function renderServiceShim(u: Unit, body: HTMLElement) {
     try {
+      const wp = window.weeklyPeriodos;
+      const weeklyPeriodos = Array.isArray(wp) ? (wp as unknown as WeeklyPeriodoSvc[]) : [];
       renderServiceNew(body, {
         unit: u as UnitSvc,
-        weeklyPeriodos: (window.weeklyPeriodos ?? []) as unknown as WeeklyPeriodoSvc[],
+        weeklyPeriodos,
       });
     } catch (err) {
       console.error("[renderService/new] falló, fallback a legado:", err);

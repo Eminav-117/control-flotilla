@@ -77,10 +77,14 @@ export function latestActivasPerUnit(
   const out: { latest: TallerEntry; key: string; count: number }[] = [];
   for (const [key, arr] of groups.entries()) {
     // arr ya está ordenado desc por fentrada; la "latest" real usa updatedAt
-    // (más preciso: reorden por updatedAt).
-    const latest = arr.reduce((a, b) =>
-      (b.updatedAt ?? "") > (a.updatedAt ?? "") ? b : a,
-    );
+    // (más preciso: reorden por updatedAt). Parseamos a timestamp para evitar
+    // dependencia del formato exacto del string ISO.
+    const ts = (s?: string): number => {
+      if (!s) return 0;
+      const t = Date.parse(s);
+      return Number.isFinite(t) ? t : 0;
+    };
+    const latest = arr.reduce((a, b) => (ts(b.updatedAt) > ts(a.updatedAt) ? b : a));
     if (isClosed(latest)) continue;
     out.push({ latest, key, count: arr.length });
   }

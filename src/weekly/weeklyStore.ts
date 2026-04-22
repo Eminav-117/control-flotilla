@@ -117,7 +117,6 @@ export function buildKpisFromPeriodo(periodo: WeeklyPeriodo | undefined): Weekly
 
 function norm(s: string): string {
   return s
-    .toString()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase();

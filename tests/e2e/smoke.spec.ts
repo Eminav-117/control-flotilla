@@ -20,10 +20,13 @@ test.describe("smoke — bootstrap básico", () => {
     await page.waitForLoadState("networkidle");
 
     // Vendor scripts cargados
-    const xlsxLoaded = await page.evaluate(() => typeof window.XLSX !== "undefined");
-    const jspdfLoaded = await page.evaluate(
-      () => typeof window.jspdf !== "undefined" || typeof window.jsPDF !== "undefined",
+    const xlsxLoaded = await page.evaluate(
+      () => typeof (window as unknown as { XLSX?: unknown }).XLSX !== "undefined",
     );
+    const jspdfLoaded = await page.evaluate(() => {
+      const w = window as unknown as { jspdf?: unknown; jsPDF?: unknown };
+      return typeof w.jspdf !== "undefined" || typeof w.jsPDF !== "undefined";
+    });
     expect(xlsxLoaded, "XLSX (vendor) debe estar cargado").toBe(true);
     expect(jspdfLoaded, "jsPDF (vendor) debe estar cargado").toBe(true);
 

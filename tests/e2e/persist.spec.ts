@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -9,10 +9,10 @@ const FIXTURE_MENSUAL = path.resolve(__dirname, "../../public/mensual.xlsx");
 const DB_NAME = "gpa_fleet";
 
 test.describe("persist+restore — IndexedDB session", () => {
-  async function wipeIDB(page) {
+  async function wipeIDB(page: Page) {
     await page.goto(APP_PATH);
     await page.evaluate(
-      (dbName) =>
+      (dbName: string) =>
         new Promise<void>((resolve) => {
           const req = indexedDB.deleteDatabase(dbName);
           req.onsuccess = () => resolve();

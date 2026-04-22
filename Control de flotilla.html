@@ -143,7 +143,7 @@ g.inflateBytes=async function(src){
       const stream=blob.stream().pipeThrough(ds);
       const buf=await new Response(stream).arrayBuffer();
       return new Uint8Array(buf);
-    }catch(_){/* caer a pureInflate */}
+    }catch(e){console.debug("[inflateBytes] DecompressionStream falló, fallback pureInflate:", e&&e.message);}
   }
   return pureInflate(src);
 };
@@ -3996,6 +3996,9 @@ async function exportFleetPDF(){
     if(px===null)defaultPos();
     applyGeom();
     const d=document.getElementById('det');
+    // Idempotencia: evita doble-bind de listeners si initFloatPanel se invoca otra vez
+    // (p.ej. tras restoreState). Listeners viven todo el lifetime del panel; no usamos
+    // AbortController porque no hay caso de uso para detach.
     if(!d||d.dataset.fpInit)return;
     d.dataset.fpInit='1';
 

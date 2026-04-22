@@ -59,7 +59,15 @@ export class PdfDoc {
     this.size = orientation === "portrait" ? size : { w: size.h, h: size.w };
     this.margin = margin;
     this.onNewPage = onNewPage;
-    this.raw = new jsPDF({ orientation, unit: "mm", format: [this.size.w, this.size.h] });
+    try {
+      this.raw = new jsPDF({ orientation, unit: "mm", format: [this.size.w, this.size.h] });
+    } catch (err) {
+      throw new Error(
+        `jsPDF init falló — revisa que la librería esté cargada (./vendor/jspdf.umd.min.js). Causa: ${
+          err instanceof Error ? err.message : String(err)
+        }`,
+      );
+    }
     this.y = margin;
   }
 

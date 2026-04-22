@@ -8,14 +8,23 @@ Ejecuta este comando en la raíz del proyecto para generar el contenedor industr
 docker build -t control-flotilla .
 ```
 
-## 🧪 2. Verificación de Seguridad (CSP)
+## 🧪 2. Verificación de Seguridad (CSP) Post-Deploy
 Antes de subir al servidor, verifica que la **Política de Seguridad de Contenido** no bloquee funciones críticas:
 ```bash
 docker run -d -p 8080:80 --name test-flotilla control-flotilla
 ```
-*   Accede a `http://localhost:8080`
-*   Abre la consola del navegador (F12) y verifica que no haya errores de "Refused to load...".
-*   Prueba cargar un ZIP pesado para verificar que el nuevo motor de streaming funciona en el entorno Nginx.
+
+**Checklist de smoke post-deploy:**
+1. `curl -sI http://localhost:8080/ | grep -i "content-security-policy"` — CSP header presente con `default-src 'self'`.
+2. `curl -sI http://localhost:8080/ | grep -iE "x-content-type-options|referrer-policy|permissions-policy"` — headers de hardening presentes.
+3. `curl -s http://localhost:8080/healthz` — devuelve `200 ok`.
+4. `curl -sI http://localhost:8080/api/foo` — devuelve `404` (API masquerade bloqueado).
+5. Abre `http://localhost:8080` en navegador (F12 → Console):
+   - Sin errores "Refused to load …" (CSP bloqueando recursos legítimos).
+   - Sin errores "Mixed content" (http:// en página https://).
+   - No aparece header `Server: nginx/x.y.z` (server_tokens off).
+6. Prueba cargar ZIP ≥100MB — `client_max_body_size 200m` debe permitirlo (no `413`).
+7. Test CORS: `fetch("https://cdn.cualquiera.com")` desde DevTools → bloqueado por `connect-src 'self'`.
 
 ## 🌐 3. Despliegue en Servidor de Intranet (Air-gap)
 Si tu servidor interno no tiene acceso a internet para descargar imágenes de Node o Nginx:

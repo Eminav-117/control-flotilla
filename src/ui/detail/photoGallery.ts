@@ -189,6 +189,12 @@ function buildZipThumb(
   });
   item.appendChild(img);
   if (lazyObserver) lazyObserver.observe(img);
+  else {
+    // Sin observer: fallback eager — asigna src directo para que la imagen cargue
+    // (ej. IntersectionObserver no soportado, o caller no inyectó).
+    img.src = entry.fname;
+    img.style.opacity = "1";
+  }
 
   const label = document.createElement("div");
   label.className = "pglbl";
