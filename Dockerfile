@@ -22,8 +22,14 @@ RUN npm run build && \
 # NOTA: pin digest en producción — ver comentario etapa build.
 FROM nginx:1.27.3-alpine AS runtime
 
-# Copiar configuración personalizada de Nginx
+# Copiar configuración personalizada de Nginx (server block)
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Worker tuning: nginx:alpine default = worker_processes 1 + 1024 connections.
+# `auto` usa 1 worker por CPU — uploads concurrentes no serializan.
+# 2048 connections por worker = ~4k concurrentes por 2-core (más que suficiente intranet).
+RUN sed -i 's/^worker_processes.*$/worker_processes auto;/' /etc/nginx/nginx.conf && \
+    sed -i 's/worker_connections  *1024/worker_connections 2048/' /etc/nginx/nginx.conf
 
 # Copiar los archivos estáticos desde la etapa de build
 COPY --from=build /app/dist /usr/share/nginx/html

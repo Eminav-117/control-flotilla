@@ -10,13 +10,22 @@
 <script>
   // Anti-FOUC: aplicar tema ANTES de cargar CSS para evitar flash.
   // Precedencia: localStorage.theme > prefers-color-scheme > 'light'.
+  // Si localStorage está corrupto o deshabilitado (modo incógnito estricto, quota exceeded),
+  // caemos a prefers-color-scheme con log explícito para diagnosticar (no silencioso).
   (function(){
     try{
       var saved = localStorage.getItem('gpa-theme');
       var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
       var theme = saved || (prefersDark ? 'dark' : 'light');
       if(theme === 'dark') document.documentElement.setAttribute('data-theme','dark');
-    }catch(e){}
+    }catch(e){
+      console.warn('[anti-FOUC] localStorage inaccesible, fallback a prefers-color-scheme:', e && e.message);
+      try{
+        if(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches){
+          document.documentElement.setAttribute('data-theme','dark');
+        }
+      }catch(_){}
+    }
   })();
 </script>
 <!--
@@ -903,10 +912,14 @@ async function persistState(filename){
 
     tx.onerror = () => {
       console.error("[DB] Error en transacción:", tx.error);
+      const msg = tx.error?.message || "Error desconocido";
+      window.notify?.(`No se guardó la sesión en disco: ${msg}. Tus cambios pueden perderse al cerrar.`, "error", 8000);
       reject(tx.error || new Error("IDB transaction failed"));
     };
     tx.onabort = () => {
       console.error("[DB] Transacción abortada:", tx.error);
+      const msg = tx.error?.message || "abortada";
+      window.notify?.(`Guardado interrumpido (${msg}). Reintenta cargando el archivo.`, "error", 8000);
       reject(tx.error || new Error("IDB transaction aborted"));
     };
   });
@@ -2428,7 +2441,16 @@ function appendSecureCell(tr, content, className = "tc") {
 }
 
 function renderTable(){
-  const rows = filt();
+  // filt() puede throw si curS/curB/curF son inválidos o sortedUnits recibe bad data.
+  // Fallback: renderizar todas las unidades y loguear — mejor ruido visual que crash UI.
+  let rows;
+  try {
+    rows = filt();
+    if(!Array.isArray(rows)) throw new Error("filt() no retornó array");
+  } catch(err) {
+    console.error("[renderTable] filt() falló, fallback a units:", err);
+    rows = Array.isArray(units) ? units : [];
+  }
   const tbody = document.getElementById("tbody");
   document.getElementById("rcnt").textContent = `${rows.length}/${units.length}`;
 
