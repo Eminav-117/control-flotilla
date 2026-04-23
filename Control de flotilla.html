@@ -182,7 +182,7 @@ g.inflateBytes=async function(src){
     <button class="mnav on" id="mn-insp" onclick="showView('inspecciones')">Inspecciones</button>
     <button class="mnav" id="mn-taller" onclick="showView('taller')">
       <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-1px"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-      Taller <span id="taller-badge" style="display:none;background:#DC2626;color:#fff;border-radius:10px;padding:0 5px;font-size:9px;margin-left:2px"></span>
+      Taller <span id="taller-badge" style="display:none;background:var(--R);color:#fff;border-radius:10px;padding:0 5px;font-size:9px;margin-left:2px"></span>
     </button>
     <button class="mnav" id="mn-semanales" onclick="showView('semanales')">
       <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-1px"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
@@ -266,17 +266,17 @@ g.inflateBytes=async function(src){
       </div>
     </div>
     <div class="hero-card">
-      <div class="hero-icon" style="background:#EF4444"><i data-lucide="calendar-clock" style="width:22px;height:22px;color:#fff;stroke-width:2"></i></div>
+      <div class="hero-icon" style="background:var(--R)"><i data-lucide="calendar-clock" style="width:22px;height:22px;color:#fff;stroke-width:2"></i></div>
       <div class="hero-body">
-        <div class="hero-val" style="color:#EF4444" id="kv_svc">—</div>
+        <div class="hero-val" style="color:var(--R)" id="kv_svc">—</div>
         <div class="hero-lbl">Servicio</div>
         <div class="hero-sub" id="ks_svc"></div>
       </div>
     </div>
     <div class="hero-card">
-      <div class="hero-icon" style="background:#7c3aed"><i data-lucide="wrench" style="width:22px;height:22px;color:#fff;stroke-width:2"></i></div>
+      <div class="hero-icon" style="background:var(--B)"><i data-lucide="wrench" style="width:22px;height:22px;color:#fff;stroke-width:2"></i></div>
       <div class="hero-body">
-        <div class="hero-val" style="color:#7c3aed" id="kv_taller">—</div>
+        <div class="hero-val" style="color:var(--B)" id="kv_taller">—</div>
         <div class="hero-lbl">En Taller</div>
         <div class="hero-sub" id="ks_taller"></div>
       </div>
@@ -358,13 +358,13 @@ g.inflateBytes=async function(src){
     <button class="chip" id="btn-Completar" onclick="setF('Completar')" title="Unidades con al menos un hallazgo pendiente (foto, doc, info). Pendiente admin, no riesgo operativo."><span class="chip-dot" style="background:var(--B)"></span>Pendientes <span class="chip-n" id="fc4"></span></button>
     <button class="chip" id="btn-OK" onclick="setF('OK')"><span class="chip-dot" style="background:var(--G)"></span>OK <span class="chip-n" id="fc2"></span></button>
     <button class="chip" id="btn-obs" onclick="setF('obs')"><span class="chip-dot" style="background:#6366F1"></span>Comentarios <span class="chip-n" id="fc3"></span></button>
-    <button class="chip" id="btn-taller" onclick="setF('taller')"><span class="chip-dot" style="background:#7c3aed"></span>Taller <span class="chip-n" id="fc_taller"></span></button>
-    <button class="chip" id="btn-svcvencido" onclick="setF('svcvencido')"><span class="chip-dot" style="background:#EF4444"></span>Svc ≤30d <span class="chip-n" id="fc_svc"></span></button>
+    <button class="chip" id="btn-taller" onclick="setF('taller')"><span class="chip-dot" style="background:var(--B)"></span>Taller <span class="chip-n" id="fc_taller"></span></button>
+    <button class="chip" id="btn-svcvencido" onclick="setF('svcvencido')"><span class="chip-dot" style="background:var(--R)"></span>Svc ≤30d <span class="chip-n" id="fc_svc"></span></button>
   </div>
-  <select id="bsel" onchange="setB(this.value)"><option value="all">Todas las sucursales</option></select>
+  <select id="bsel" onchange="setB(this.value)" aria-label="Filtrar por sucursal"><option value="all">Todas las sucursales</option></select>
   <div class="sw">
     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-    <input id="srch" placeholder="Placa, marca, inspector…" oninput="debouncedSetSrch(this.value)"/>
+    <input id="srch" placeholder="Placa, marca, inspector…" oninput="debouncedSetSrch(this.value)" aria-label="Buscar por placa, marca o inspector"/>
   </div>
   <span class="rcnt" id="rcnt"></span>
 </div>
@@ -457,7 +457,7 @@ g.inflateBytes=async function(src){
       <div class="pm-row">
         <div class="pm-field">
           <label>Mes</label>
-          <select id="pm-mes">
+          <select id="pm-mes" aria-label="Mes del período">
             <option value="01">Enero</option>
             <option value="02">Febrero</option>
             <option value="03">Marzo</option>
@@ -474,7 +474,7 @@ g.inflateBytes=async function(src){
         </div>
         <div class="pm-field">
           <label>Año</label>
-          <input id="pm-anio" type="number" min="2020" max="2035" value="2025"/>
+          <input id="pm-anio" type="number" min="2020" max="2035" value="2025" aria-label="Año del período"/>
         </div>
       </div>
       <div class="pm-hint">Este período se guardará junto con los datos de inspección. Podrás cambiar entre períodos desde la barra superior y ver la evolución de cada unidad.</div>
@@ -503,10 +503,10 @@ g.inflateBytes=async function(src){
 
   <!-- Barra: Operaciones Activas -->
   <div class="tl-bar" id="tl-bar-activas">
-    <select id="tl-filt-suc" onchange="renderTaller()" style="padding:5px 8px;border:1px solid var(--ln);border-radius:6px;font-size:11px;color:var(--w1);background:var(--bg)">
+    <select id="tl-filt-suc" onchange="renderTaller()" aria-label="Filtrar taller por sucursal" style="padding:5px 8px;border:1px solid var(--ln);border-radius:6px;font-size:11px;color:var(--w1);background:var(--bg)">
       <option value="all">Todas las sucursales</option>
     </select>
-    <select id="tl-filt-area" onchange="renderTaller()" style="padding:5px 8px;border:1px solid var(--ln);border-radius:6px;font-size:11px;color:var(--w1);background:var(--bg)">
+    <select id="tl-filt-area" onchange="renderTaller()" aria-label="Filtrar taller por área" style="padding:5px 8px;border:1px solid var(--ln);border-radius:6px;font-size:11px;color:var(--w1);background:var(--bg)">
       <option value="all">Todas las áreas</option>
       <option value="LOGISTICA">Logística</option>
       <option value="SERVICIO TECNICO">Servicio Técnico</option>
@@ -514,12 +514,13 @@ g.inflateBytes=async function(src){
       <option value="ALMACEN">Almacén</option>
       <option value="ADMINISTRACION">Administración</option>
     </select>
-    <select id="tl-filt-tipo" onchange="renderTaller()" style="padding:5px 8px;border:1px solid var(--ln);border-radius:6px;font-size:11px;color:var(--w1);background:var(--bg)">
+    <select id="tl-filt-tipo" onchange="renderTaller()" aria-label="Filtrar taller por tipo de mantenimiento" style="padding:5px 8px;border:1px solid var(--ln);border-radius:6px;font-size:11px;color:var(--w1);background:var(--bg)">
       <option value="all">Todos los tipos</option>
       <option value="Correctivo">Mtto Correctivo</option>
       <option value="Preventivo">Mtto Preventivo</option>
     </select>
     <input id="tl-filt-q" type="text" placeholder="Buscar ECO, placa, técnico…"
+      aria-label="Buscar en taller por ECO, placa o técnico"
       style="padding:5px 9px;border:1px solid var(--ln);border-radius:6px;font-size:11px;color:var(--w1);background:var(--bg);width:180px"
       oninput="renderTaller()"/>
     <span id="tl-rcnt" style="font-size:10px;color:var(--s2)"></span>
@@ -539,12 +540,13 @@ g.inflateBytes=async function(src){
   <!-- Barra: Historial / Expedientes -->
   <div class="tl-bar" id="tl-bar-historial" style="display:none;flex-wrap:wrap;gap:6px">
     <input id="tl-hist-q" type="text" placeholder="Buscar por No. Unidad, Placas o Modelo…"
+      aria-label="Buscar en historial de taller"
       style="padding:5px 9px;border:1px solid var(--ln);border-radius:6px;font-size:11px;color:var(--w1);background:var(--bg);width:200px"
       oninput="renderTaller()"/>
-    <select id="tl-hist-suc" onchange="renderTaller()" style="padding:5px 8px;border:1px solid var(--ln);border-radius:6px;font-size:11px;color:var(--w1);background:var(--bg)">
+    <select id="tl-hist-suc" onchange="renderTaller()" aria-label="Filtrar historial por sucursal" style="padding:5px 8px;border:1px solid var(--ln);border-radius:6px;font-size:11px;color:var(--w1);background:var(--bg)">
       <option value="all">Todas las sucursales</option>
     </select>
-    <select id="tl-hist-tipo" onchange="renderTaller()" style="padding:5px 8px;border:1px solid var(--ln);border-radius:6px;font-size:11px;color:var(--w1);background:var(--bg)" title="Filtrar por tipo de mantenimiento">
+    <select id="tl-hist-tipo" onchange="renderTaller()" aria-label="Filtrar historial por tipo" style="padding:5px 8px;border:1px solid var(--ln);border-radius:6px;font-size:11px;color:var(--w1);background:var(--bg)" title="Filtrar por tipo de mantenimiento">
       <option value="all">Todos los tipos</option>
       <option value="Correctivo">Correctivo</option>
       <option value="Preventivo">Preventivo</option>
@@ -553,9 +555,11 @@ g.inflateBytes=async function(src){
     <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--s2)">
       Desde
       <input id="tl-hist-desde" type="date" onchange="renderTaller()"
+        aria-label="Fecha desde (filtro historial taller)"
         style="padding:4px 6px;border:1px solid var(--ln);border-radius:6px;font-size:11px;color:var(--w1);background:var(--bg)"/>
       Hasta
       <input id="tl-hist-hasta" type="date" onchange="renderTaller()"
+        aria-label="Fecha hasta (filtro historial taller)"
         style="padding:4px 6px;border:1px solid var(--ln);border-radius:6px;font-size:11px;color:var(--w1);background:var(--bg)"/>
     </div>
     <button onclick="document.getElementById('tl-hist-q').value='';document.getElementById('tl-hist-desde').value='';document.getElementById('tl-hist-hasta').value='';document.getElementById('tl-hist-suc').value='all';document.getElementById('tl-hist-tipo').value='all';renderTaller()"
@@ -601,12 +605,14 @@ g.inflateBytes=async function(src){
     <button class="sw-filter-btn sw-ok"  id="sw-f-ok"  onclick="swSetF('OK')">✓ OK <span id="sw-fc-ok" style="opacity:.65"></span></button>
     <div class="divdr"></div>
     <select id="sw-filt-suc" onchange="renderSemanales()"
+      aria-label="Filtrar semanal por sucursal"
       style="padding:5px 8px;border:1px solid var(--ln);border-radius:6px;font-size:11px;color:var(--w1);background:var(--bg)">
       <option value="all">Todas las sucursales</option>
     </select>
     <div class="sw" style="display:flex;align-items:center;gap:5px;border:1px solid var(--ln);border-radius:6px;padding:3px 8px;background:var(--bg2)">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--s3)" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       <input id="sw-srch" type="text" placeholder="ECO, placa, modelo…"
+        aria-label="Buscar en semanal por ECO, placa o modelo"
         style="border:none;background:transparent;font-size:11px;color:var(--w1);width:150px;outline:none"
         oninput="swDebouncedSearch(this.value)"/>
     </div>
@@ -651,7 +657,7 @@ g.inflateBytes=async function(src){
     </div>
     <div class="tl-mbody">
       <div class="tl-field full tl-ac-wrap">
-        <label>No. Unidad / Eco — <span style="color:var(--ac);font-weight:700">escribe para buscar</span></label>
+        <label for="tf-eco">No. Unidad / Eco — <span style="color:var(--ac);font-weight:700">escribe para buscar</span></label>
         <input id="tf-eco" type="text" placeholder="Ej: 42 — busca en flota e historial"
           oninput="tlAcSearch(this.value)"
           onblur="setTimeout(()=>document.getElementById('tl-ac-drop').style.display='none',160)"
@@ -659,20 +665,20 @@ g.inflateBytes=async function(src){
         <div id="tl-ac-drop" class="tl-ac-drop"></div>
       </div>
       <div class="tl-field">
-        <label>Placas</label>
+        <label for="tf-plate">Placas</label>
         <input id="tf-plate" type="text" placeholder="Ej: JV98698"/>
       </div>
       <div class="tl-field">
-        <label>Modelo / Submarca</label>
+        <label for="tf-brand">Modelo / Submarca</label>
         <input id="tf-brand" type="text" placeholder="Ej: NP 300 Chasis"/>
       </div>
       <div class="tl-field">
-        <label>Sucursal</label>
+        <label for="tf-branch">Sucursal</label>
         <input id="tf-branch" type="text" placeholder="Ej: Cancun" list="tl-branch-list"/>
         <datalist id="tl-branch-list"></datalist>
       </div>
       <div class="tl-field">
-        <label>Area</label>
+        <label for="tf-area">Area</label>
         <select id="tf-area">
           <option value="">— Sin area —</option>
           <option value="LOGISTICA">LOGISTICA</option>
@@ -683,53 +689,53 @@ g.inflateBytes=async function(src){
         </select>
       </div>
       <div class="tl-field">
-        <label>Estado</label>
+        <label for="tf-estado">Estado</label>
         <select id="tf-estado">
           <option value="En Revisión">En Revisión (Activo)</option>
           <option value="Finalizado">Finalizado</option>
         </select>
       </div>
       <div class="tl-field">
-        <label>Tipo de Mantenimiento</label>
+        <label for="tf-tipo">Tipo de Mantenimiento</label>
         <select id="tf-tipo">
           <option value="Correctivo">Mtto Correctivo</option>
           <option value="Preventivo">Mtto Preventivo</option>
         </select>
       </div>
       <div class="tl-field">
-        <label>Fecha de Reporte Falla</label>
+        <label for="tf-freporte">Fecha de Reporte Falla</label>
         <input id="tf-freporte" type="date"/>
       </div>
       <div class="tl-field">
-        <label>Fecha de Atencion en Taller</label>
+        <label for="tf-fentrada">Fecha de Atencion en Taller</label>
         <input id="tf-fentrada" type="date"/>
       </div>
       <div class="tl-field">
-        <label>Fecha Inicial de Salida (Est.)</label>
+        <label for="tf-fsalida-est">Fecha Inicial de Salida (Est.)</label>
         <input id="tf-fsalida-est" type="date"/>
       </div>
       <div class="tl-field">
-        <label>Fecha Real de Salida</label>
+        <label for="tf-fsalida-real">Fecha Real de Salida</label>
         <input id="tf-fsalida-real" type="date"/>
       </div>
       <div class="tl-field">
-        <label>Kilometraje al Ingreso</label>
+        <label for="tf-km">Kilometraje al Ingreso</label>
         <input id="tf-km" type="number" min="0" step="1" placeholder="Ej: 85000"/>
       </div>
       <div class="tl-field">
-        <label>Subtotal ($)</label>
+        <label for="tf-gasto">Subtotal ($)</label>
         <input id="tf-gasto" type="number" min="0" step="0.01" placeholder="0.00"/>
       </div>
       <div class="tl-field full">
-        <label>Tecnico Asignado</label>
+        <label for="tf-tecnico">Tecnico Asignado</label>
         <input id="tf-tecnico" type="text" placeholder="Nombre del tecnico o taller externo"/>
       </div>
       <div class="tl-field full">
-        <label>Refacciones / Trabajos Realizados</label>
+        <label for="tf-refacciones">Refacciones / Trabajos Realizados</label>
         <textarea id="tf-refacciones" placeholder="Listado de refacciones o trabajos realizados..." style="min-height:56px"></textarea>
       </div>
       <div class="tl-field full">
-        <label>Comentario de Falla</label>
+        <label for="tf-comentario">Comentario de Falla</label>
         <textarea id="tf-comentario" placeholder="Descripcion de la falla o trabajo realizado..."></textarea>
       </div>
     </div>
@@ -2309,8 +2315,8 @@ function buildKPIs(){
   if (donutEl && typeof window.renderDonutChart === "function") {
     const cs = getComputedStyle(document.documentElement);
     const cR = cs.getPropertyValue("--R").trim() || "#E11D48";
-    const cA = cs.getPropertyValue("--A").trim() || "#D97706";
-    const cG = cs.getPropertyValue("--G").trim() || "#059669";
+    const cA = cs.getPropertyValue("--A").trim() || "var(--A)";
+    const cG = cs.getPropertyValue("--G").trim() || "var(--G)";
     try {
       window.renderDonutChart(donutEl, [
         { key: "Urgente", label: "Urgente", value: uDonut, color: cR },
@@ -2530,25 +2536,25 @@ function buildAlertsSummary(){
   const svcVencido=units.filter(u=>{const d=parseSvcDate(u.nextSvc);return d&&d<today;});
   const svcProximo=units.filter(u=>{const d=parseSvcDate(u.nextSvc);return d&&d>=today&&d<=d30;});
   if(svcVencido.length)
-    alerts.push({icon:`<i data-lucide="alert-circle" style="width:13px;height:13px;color:#DC2626;vertical-align:-2px"></i>`,color:"#DC2626",text:`<b>${svcVencido.length}</b> unidad${svcVencido.length!==1?"es":""} con servicio <b>vencido</b>`,
+    alerts.push({icon:`<i data-lucide="alert-circle" style="width:13px;height:13px;color:var(--R);vertical-align:-2px"></i>`,color:"var(--R)",text:`<b>${svcVencido.length}</b> unidad${svcVencido.length!==1?"es":""} con servicio <b>vencido</b>`,
       detail:svcVencido.slice(0,5).map(u=>`${escHtml(u.eco||u.plate)} (${escHtml(u.nextSvc)})`).join(", ")+(svcVencido.length>5?` y ${svcVencido.length-5} más`:""),
       action:"svcvencido"});
   if(svcProximo.length)
-    alerts.push({icon:`<i data-lucide="clock" style="width:13px;height:13px;color:#D97706;vertical-align:-2px"></i>`,color:"#D97706",text:`<b>${svcProximo.length}</b> unidad${svcProximo.length!==1?"es":""} con servicio en los <b>próximos 30 días</b>`,
+    alerts.push({icon:`<i data-lucide="clock" style="width:13px;height:13px;color:var(--A);vertical-align:-2px"></i>`,color:"var(--A)",text:`<b>${svcProximo.length}</b> unidad${svcProximo.length!==1?"es":""} con servicio en los <b>próximos 30 días</b>`,
       detail:svcProximo.slice(0,5).map(u=>`${escHtml(u.eco||u.plate)} (${escHtml(u.nextSvc)})`).join(", ")+(svcProximo.length>5?` y ${svcProximo.length-5} más`:""),
       action:"svcvencido"});
 
   // 2. Unidades urgentes (= chip Urgente: u.risk==="Urgente")
   const urgentes=units.filter(u=>u.risk==="Urgente");
   if(urgentes.length)
-    alerts.push({icon:`<i data-lucide="siren" style="width:13px;height:13px;color:#DC2626;vertical-align:-2px"></i>`,color:"#DC2626",text:`<b>${urgentes.length}</b> unidad${urgentes.length!==1?"es":""} con estado <b>Urgente</b>`,
+    alerts.push({icon:`<i data-lucide="siren" style="width:13px;height:13px;color:var(--R);vertical-align:-2px"></i>`,color:"var(--R)",text:`<b>${urgentes.length}</b> unidad${urgentes.length!==1?"es":""} con estado <b>Urgente</b>`,
       detail:urgentes.slice(0,5).map(u=>{const n=u.F.filter(f=>f.lv==="Urgente").length;return `${escHtml(u.eco||u.plate)} (${n} hallazgo${n!==1?"s":""})`;}).join(", ")+(urgentes.length>5?` y ${urgentes.length-5} más`:""),
       action:"Urgente"});
 
   // 3. Llantas críticas
   const llantasCrit=units.filter(u=>u.minT!==null&&u.minT<=TCRIT);
   if(llantasCrit.length)
-    alerts.push({icon:`<i data-lucide="disc-3" style="width:13px;height:13px;color:#EA580C;vertical-align:-2px"></i>`,color:"#EA580C",text:`<b>${llantasCrit.length}</b> unidad${llantasCrit.length!==1?"es":""} con llantas <b>≤ ${TCRIT}mm</b> (crítico)`,
+    alerts.push({icon:`<i data-lucide="disc-3" style="width:13px;height:13px;color:var(--O);vertical-align:-2px"></i>`,color:"var(--O)",text:`<b>${llantasCrit.length}</b> unidad${llantasCrit.length!==1?"es":""} con llantas <b>≤ ${TCRIT}mm</b> (crítico)`,
       detail:llantasCrit.slice(0,5).map(u=>`${escHtml(u.eco||u.plate)}: ${u.minT.toFixed(1)}mm`).join(", ")+(llantasCrit.length>5?` y ${llantasCrit.length-5} más`:"")});
 
   // 4. Taller: unidades >7 días
@@ -2559,7 +2565,7 @@ function buildAlertsSummary(){
     return dias>7;
   });
   if(tallerLargo.length)
-    alerts.push({icon:`<i data-lucide="wrench" style="width:13px;height:13px;color:#7C3AED;vertical-align:-2px"></i>`,color:"#7C3AED",text:`<b>${tallerLargo.length}</b> unidad${tallerLargo.length!==1?"es":""} llevan <b>más de 7 días</b> en taller`,
+    alerts.push({icon:`<i data-lucide="wrench" style="width:13px;height:13px;color:var(--B);vertical-align:-2px"></i>`,color:"var(--B)",text:`<b>${tallerLargo.length}</b> unidad${tallerLargo.length!==1?"es":""} llevan <b>más de 7 días</b> en taller`,
       detail:tallerLargo.sort((a,b)=>new Date(a.fentrada)-new Date(b.fentrada)).slice(0,5).map(e=>{
         const dias=Math.round((Date.now()-new Date(e.fentrada))/86400000);
         return`${escHtml(e.eco||e.plate)}: ${dias}d`;
@@ -2769,8 +2775,8 @@ function renderTable(){
       if(sd){
         const svcEl=document.createElement("div");
         svcEl.style.cssText="font-size:8px;margin-top:2px;font-weight:700";
-        if(sd<today0){svcEl.style.color="#EF4444";svcEl.innerHTML='<i data-lucide="alert-triangle" style="width:10px;height:10px;vertical-align:-2px"></i> Svc vencido';}
-        else if(sd<=d30c){svcEl.style.color="#F59E0B";svcEl.innerHTML='<i data-lucide="clock" style="width:10px;height:10px;vertical-align:-2px"></i> Svc próximo';}
+        if(sd<today0){svcEl.style.color="var(--R)";svcEl.innerHTML='<i data-lucide="alert-triangle" style="width:10px;height:10px;vertical-align:-2px"></i> Svc vencido';}
+        else if(sd<=d30c){svcEl.style.color="var(--A)";svcEl.innerHTML='<i data-lucide="clock" style="width:10px;height:10px;vertical-align:-2px"></i> Svc próximo';}
         if(svcEl.textContent)divKM.appendChild(svcEl);
       }
     }
@@ -3370,9 +3376,9 @@ function renderNotes(u, body){
       <span class="notes-cnt">${notes.length} nota${notes.length!==1?"s":""}</span>
     </div>
     <div class="note-form">
-      <textarea class="note-ta" id="note-input" placeholder="Escribe una observación, acción tomada, fecha de cita en taller…" rows="3"></textarea>
+      <textarea class="note-ta" id="note-input" placeholder="Escribe una observación, acción tomada, fecha de cita en taller…" aria-label="Nueva nota de seguimiento" rows="3"></textarea>
       <div class="note-row">
-        <select class="note-type" id="note-type">${typeOpts}</select>
+        <select class="note-type" id="note-type" aria-label="Tipo de nota">${typeOpts}</select>
         <button class="note-save" onclick="addNote('${u.uid}')">+ Guardar nota</button>
       </div>
     </div>
@@ -3551,10 +3557,10 @@ async function exportPDF(){
   let y=M;
 
   const C={
-    R:"#DC2626", A:"#D97706", G:"#059669", B:"#7C3AED",
+    R:"var(--R)", A:"var(--A)", G:"var(--G)", B:"var(--B)",
     T:"#0D9488",
     bg:"#FFFFFF", bg2:"#F7F8FA", bg3:"#F0F1F4",
-    ln:"#EAEBED", s1:"#64748B", s2:"#94A3B8", s3:"#CBD5E1",
+    ln:"#EAEBED", s1:"var(--s2)", s2:"#94A3B8", s3:"#CBD5E1",
     w1:"#0F172A", w2:"#334155"
   };
   const riskColor=u.risk==="Urgente"?C.R:u.risk==="Revisar"?C.A:u.risk==="Completar"?C.B:C.G;
@@ -3572,7 +3578,7 @@ async function exportPDF(){
     if(fill){doc.setFillColor(fill);doc.roundedRect(x,yy,w,h,r,r,"F");}
     if(stroke){doc.setDrawColor(stroke);doc.setLineWidth(0.3);doc.roundedRect(x,yy,w,h,r,r,"S");}
   };
-  const txt=(t,x,yy,size=9,col="#64748B",align="left",bold=false)=>{
+  const txt=(t,x,yy,size=9,col="var(--s2)",align="left",bold=false)=>{
     doc.setFontSize(size);doc.setTextColor(col);
     doc.setFont("helvetica",bold?"bold":"normal");
     doc.text(String(t),x,yy,{align});
@@ -3850,7 +3856,7 @@ function showResumenEjecutivo(){
       </div>
     </div>
     <div style="flex:1;overflow-y:auto;min-height:0;padding:0 24px 24px;display:flex;flex-direction:column">
-      <textarea id="resumen-text" readonly style="flex:1;min-height:240px;font-family:var(--fm);font-size:11px;line-height:1.6;padding:12px;border:1px solid var(--ln);border-radius:8px;resize:none;color:var(--w1);background:var(--bg2)">${escHtml(text)}</textarea>
+      <textarea id="resumen-text" readonly aria-label="Resumen generado (solo lectura)" style="flex:1;min-height:240px;font-family:var(--fm);font-size:11px;line-height:1.6;padding:12px;border:1px solid var(--ln);border-radius:8px;resize:none;color:var(--w1);background:var(--bg2)">${escHtml(text)}</textarea>
     </div>
   </div>`;
   document.body.appendChild(ov);
@@ -3869,10 +3875,10 @@ async function exportFleetPDF(){
   let y=M;
 
   const C={
-    R:"#DC2626", A:"#D97706", G:"#059669", B:"#7C3AED",
+    R:"var(--R)", A:"var(--A)", G:"var(--G)", B:"var(--B)",
     T:"#0D9488",
     bg:"#FFFFFF", bg2:"#F7F8FA", bg3:"#F0F1F4",
-    ln:"#EAEBED", s1:"#64748B", s2:"#94A3B8", s3:"#CBD5E1",
+    ln:"#EAEBED", s1:"var(--s2)", s2:"#94A3B8", s3:"#CBD5E1",
     w1:"#0F172A", w2:"#334155"
   };
 
@@ -3888,7 +3894,7 @@ async function exportFleetPDF(){
     if(fill){doc.setFillColor(fill);doc.roundedRect(x,yy,w,h,r,r,"F");}
     if(stroke){doc.setDrawColor(stroke);doc.setLineWidth(0.3);doc.roundedRect(x,yy,w,h,r,r,"S");}
   };
-  const txt=(t,x,yy,size=9,col="#64748B",align="left",bold=false)=>{
+  const txt=(t,x,yy,size=9,col="var(--s2)",align="left",bold=false)=>{
     doc.setFontSize(size); doc.setTextColor(col);
     doc.setFont("helvetica",bold?"bold":"normal");
     doc.text(String(t==null?"—":t),x,yy,{align});
@@ -3935,7 +3941,7 @@ async function exportFleetPDF(){
     {label:"A REVISAR",      val:nR,    color:C.A,       sub:`${pct(nR)}% de la flota`},
     {label:"COMPLETAR",      val:nC,    color:C.B,       sub:`${pct(nC)}% con pendiente`},
     {label:"OPERATIVAS",     val:nOK,   color:C.G,       sub:`${pct(nOK)}% de la flota`},
-    {label:"LLANTAS CRIT.",  val:nCT,   color:"#EA580C", sub:`<= ${TCRIT}mm de taco`},
+    {label:"LLANTAS CRIT.",  val:nCT,   color:"var(--O)", sub:`<= ${TCRIT}mm de taco`},
   ];
   for(let i=0;i<6;i++){
     const kd=kdata[i];
@@ -4869,7 +4875,7 @@ function buildKPIsSemanales(){
       <div class="kprog" style="background:var(--G);width:${pct(nOK+nRev)}%"></div>
     </div>
     <div class="kc btn" onclick="swSetF('carroceria')" title="Filtrar por daños en carrocería">
-      <div class="ktop" style="background:#F59E0B"></div>
+      <div class="ktop" style="background:var(--A)"></div>
       <div class="klbl" style="display:flex;align-items:center;gap:5px"><i data-lucide="car" style="width:11px;height:11px"></i> Carrocería</div>
       <div class="kval" style="color:${nBodyUrg?"var(--R)":nBodyRev?"var(--A)":"var(--G)"}">${nBodyUrg+nBodyRev||"0"}</div>
       <div class="ksub">${nBodyUrg?'<i data-lucide="zap" style="width:9px;height:9px;vertical-align:-1px"></i> '+nBodyUrg+" grave":""} ${nBodyRev?'<i data-lucide="alert-triangle" style="width:9px;height:9px;vertical-align:-1px"></i> '+nBodyRev+" leve":(!nBodyUrg&&!nBodyRev)?"Sin daños":""}</div>
@@ -5232,7 +5238,7 @@ function renderActivas(){
     return d>7&&d>=0;
   }).map(e=>e.eco||e.plate);
   const tlAlert = urgEcos.length
-    ? `<div style="padding:6px 16px;font-size:11px;background:linear-gradient(90deg,#F59E0B11,var(--bg2));border-bottom:1px solid var(--Al);color:var(--s1)"><span style="color:var(--A);display:inline-flex;align-items:center;gap:4px"><i data-lucide="alert-triangle" style="width:11px;height:11px"></i> ${urgEcos.length} unidad${urgEcos.length>1?"es llevan":"lleva"} más de 7 días sin salir:</span> <b>${urgEcos.slice(0,5).map(escHtml).join(", ")}${urgEcos.length>5?" y "+(urgEcos.length-5)+" más...":""}</b></div>`
+    ? `<div style="padding:6px 16px;font-size:11px;background:linear-gradient(90deg,var(--A)11,var(--bg2));border-bottom:1px solid var(--Al);color:var(--s1)"><span style="color:var(--A);display:inline-flex;align-items:center;gap:4px"><i data-lucide="alert-triangle" style="width:11px;height:11px"></i> ${urgEcos.length} unidad${urgEcos.length>1?"es llevan":"lleva"} más de 7 días sin salir:</span> <b>${urgEcos.slice(0,5).map(escHtml).join(", ")}${urgEcos.length>5?" y "+(urgEcos.length-5)+" más...":""}</b></div>`
     : "";
 
   const _klbl = (ico,txt) => `<div class="klbl" style="display:flex;align-items:center;gap:5px"><i data-lucide="${ico}" style="width:11px;height:11px"></i> ${txt}</div>`;
@@ -5253,11 +5259,11 @@ function renderActivas(){
       <div class="kprog" style="background:var(--R);width:${tlPct(nCorr)}%"></div>
     </div>
     <div class="kc" style="cursor:pointer" onclick="document.getElementById('tl-filt-tipo').value='Preventivo';renderTaller()">
-      <div class="ktop" style="background:#7C3AED"></div>
+      <div class="ktop" style="background:var(--B)"></div>
       ${_klbl("shield-check","Mtto Preventivo")}
-      <div class="kval" style="color:#7C3AED">${nPrev}</div>
+      <div class="kval" style="color:var(--B)">${nPrev}</div>
       <div class="ksub">${tlPct(nPrev)}% de activos</div>
-      <div class="kprog" style="background:#7C3AED;width:${tlPct(nPrev)}%"></div>
+      <div class="kprog" style="background:var(--B);width:${tlPct(nPrev)}%"></div>
     </div>
     <div class="kc" style="cursor:pointer;${nUrg>0?"border:1px solid var(--Al)":""}" onclick="tlSortByUrgencia()" title="${nUrg>0?"Click para ordenar por días":"Sin alertas activas"}">
       <div class="ktop" style="background:${nUrg>0?"var(--R)":"var(--s3)"}"></div>
@@ -5279,7 +5285,7 @@ function renderActivas(){
           <circle cx="${dcx}" cy="${dcy}" r="${dR}" fill="none" stroke="var(--bg4)" stroke-width="${dsw}"/>
           ${donutPaths}
         </svg>
-        <div class="dmid"><div class="dtag" style="color:var(--A);background:#F59E0B15">ACTIVOS</div><div class="dpct" style="color:var(--A)">${revPct}%</div></div>
+        <div class="dmid"><div class="dtag" style="color:var(--A);background:var(--A)15">ACTIVOS</div><div class="dpct" style="color:var(--A)">${revPct}%</div></div>
       </div>
       <div style="display:flex;flex-direction:column;gap:4px;min-width:0">
         ${_klbl("pie-chart","Distribución")}
@@ -5291,7 +5297,7 @@ function renderActivas(){
 ${tlAlert}`;
   // Hover: leyenda ↔ segmento + % y tag dinámico (dona taller)
   const tlPctOf = n => nActAll ? Math.round((n/nActAll)*100) : 0;
-  const TL_DTAG_BG={"var(--A)":"#F59E0B15","var(--s3)":"#6B728015","var(--G)":"#06D6A015","var(--R)":"#DC262615"};
+  const TL_DTAG_BG={"var(--A)":"var(--A)15","var(--s3)":"#6B728015","var(--G)":"#06D6A015","var(--R)":"var(--R)15"};
   const tlHoverMap={
     rev:{pct:tlPctOf(nRev),lbl:"EN REVISIÓN",color:"var(--A)"},
     sin:{pct:tlPctOf(nSin),lbl:"SIN REG.",color:"var(--s3)"}

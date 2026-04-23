@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 const APP_PATH = "/Control%20de%20flotilla.html";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const FIXTURE_MENSUAL = path.resolve(__dirname, "../../public/mensual.xlsx");
+const FIXTURE_MENSUAL = path.resolve(__dirname, "../fixtures/mensual.xlsx");
 
 async function dismissPeriodoModal(page: Page) {
   // Esperar hasta 3s por modal (puede aparecer async post-render) y cerrar

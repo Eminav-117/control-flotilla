@@ -13,10 +13,9 @@ temp_semanal/
 Control vehicular Semanal ROF-export.zip
 Seguimiento de unidades en el taller.xlsx
 
-# Fixtures de smoke test servidos por Vite (no se commiten: son binarios grandes)
-public/
-# Excepción: assets PWA deben viajar con el repo (favicon.svg referenciado en manifest)
-!public/favicon.svg
+# public/ ahora solo contiene assets PWA reales (favicon.svg) — SÍ commiteados.
+# Fixtures de tests movidos a tests/fixtures/ (binarios grandes, no se commiten).
+tests/fixtures/
 _legacy/
 .husky/_
 
