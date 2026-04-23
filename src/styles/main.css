@@ -1092,6 +1092,15 @@ select {
   animation: up 0.2s ease forwards;
   opacity: 0;
   position: relative;
+  /* Perf (audit #13 — virtualización nativa CSS en vez de JS virtual scroll).
+     content-visibility:auto permite al browser skippear layout + paint de filas
+     fuera del viewport. contain-intrinsic-size reserva espacio estimado para
+     mantener scroll height estable. Ventana 80px > min-height 64px para incluir
+     filas con obs multi-línea sin saltos de scroll.
+     Browser support: Chrome 85+, Edge 85+, Safari 18+. Firefox fallback a
+     comportamiento legacy (aún funcional, solo sin perf win). */
+  content-visibility: auto;
+  contain-intrinsic-size: 0 80px;
 }
 .tr::before {
   content: "";
