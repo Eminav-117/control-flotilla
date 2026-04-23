@@ -1621,6 +1621,34 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 
 // ════════════════════════════════════════════════════════════
+// GLOBAL CLICK DELEGATOR — XSS-safe event dispatch (audit P1 #5).
+// Reemplaza `onclick="fn('${var}')"` con `data-action="fn" data-arg1="..."`
+// Eliminamos string interpolation en atributos HTML → datos viajan via
+// dataset que browser NUNCA parsea como JS (inmune a entity-decode bypass).
+// Single listener en document — event delegation, O(1) memory vs N listeners.
+// ════════════════════════════════════════════════════════════
+document.addEventListener("click", (e) => {
+  const el = e.target && e.target.closest ? e.target.closest("[data-action]") : null;
+  if(!el) return;
+  const action = el.dataset.action;
+  const fn = window[action];
+  if(typeof fn !== "function"){
+    console.warn("[delegator] data-action sin fn global:", action);
+    return;
+  }
+  if(el.dataset.stopPropagation === "1") e.stopPropagation();
+  // Args hasta arg5 — suficiente para todos los callbacks actuales.
+  const args = [];
+  for(let i = 1; i <= 5; i++){
+    const v = el.dataset["arg" + i];
+    if(v === undefined) break;
+    args.push(v);
+  }
+  try { fn(...args); }
+  catch(err){ console.error("[delegator] " + action + " falló:", err); }
+});
+
+// ════════════════════════════════════════════════════════════
 // FILE INPUT WIRING
 // ════════════════════════════════════════════════════════════
 // Event wiring — addEventListener consistente (audit #27).
@@ -2839,7 +2867,7 @@ function renderDet(){
     const on=curTab===t.id?(u.risk==="Urgente"&&t.id==="c"?" onr":" on"):"";
     const cnt=t.n!==undefined?t.n:(t.n2!==undefined?t.n2:"");
     const badge=cnt?`<span class="dtab-badge">${cnt}</span>`:"";
-    return`<button class="dtab${on}" onclick="swTab('${t.id}')"><span class="dtab-ico">${t.ico}</span>${t.label}${badge}</button>`;
+    return`<button class="dtab${on}" data-action="swTab" data-arg1="${escAttr(t.id)}"><span class="dtab-ico">${t.ico}</span>${t.label}${badge}</button>`;
   }).join("");
   renderDetBody(u);
 }
@@ -3025,12 +3053,12 @@ function renderChecklist(u,body){
       const changed=prevFMap&&prevF&&prevF.lv!==f.lv;
       const changeStyle=(isNew||changed)?` style="box-shadow:inset 0 0 0 1.5px var(--O)"`:"";
       if(done){
-        html+=`<div class="ck-item ck-done" onclick="toggleCheckItem('${escAttr(u.uid)}','${escAttr(f.text)}')"${changeStyle}><span class="ck-icon" style="color:var(--G)">✓</span><span>${escHtml(f.text)}</span></div>`;
+        html+=`<div class="ck-item ck-done" data-action="toggleCheckItem" data-arg1="${escAttr(u.uid)}" data-arg2="${escAttr(f.text)}"${changeStyle}><span class="ck-icon" style="color:var(--G)">✓</span><span>${escHtml(f.text)}</span></div>`;
       } else {
         const cls=f.lv==="Urgente"?"ck-fail-u":f.lv==="Completar"?"ck-fail-c":"ck-fail-r";
         const icon=f.lv==="Urgente"?'<i data-lucide="x" style="width:11px;height:11px;vertical-align:-2px"></i>':f.lv==="Completar"?'<i data-lucide="plus" style="width:11px;height:11px;vertical-align:-2px"></i>':'<i data-lucide="alert-triangle" style="width:11px;height:11px;vertical-align:-2px"></i>';
         const col=f.lv==="Urgente"?"var(--R)":f.lv==="Completar"?"var(--B)":"var(--A)";
-        html+=`<div class="ck-item ${cls} ck-actionable" onclick="toggleCheckItem('${escAttr(u.uid)}','${escAttr(f.text)}')"${changeStyle}><span class="ck-icon" style="color:${col}">${icon}</span><span>${escHtml(f.text)}</span></div>`;
+        html+=`<div class="ck-item ${cls} ck-actionable" data-action="toggleCheckItem" data-arg1="${escAttr(u.uid)}" data-arg2="${escAttr(f.text)}"${changeStyle}><span class="ck-icon" style="color:${col}">${icon}</span><span>${escHtml(f.text)}</span></div>`;
       }
     }
     html+=`</div></div>`;
@@ -3169,7 +3197,7 @@ function renderPhotos(u,body){
       <div style="font-size:11px;color:var(--s3);line-height:1.8;margin-bottom:16px">
         Puedes cargar el ZIP de MoreApp o agregar fotos manualmente.
       </div>
-      <button onclick="addManualPhoto('${escAttr(u.uid)}')" style="padding:8px 16px;background:var(--ac);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px"><i data-lucide="camera" style="width:13px;height:13px"></i> Agregar fotos</button>
+      <button data-action="addManualPhoto" data-arg1="${escAttr(u.uid)}" style="padding:8px 16px;background:var(--ac);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px"><i data-lucide="camera" style="width:13px;height:13px"></i> Agregar fotos</button>
       <div style="margin-top:14px;background:var(--bg3);border:1px solid var(--ln);border-radius:8px;padding:12px;text-align:left;font-size:11px;color:var(--s2)">
         <div style="margin-bottom:5px"><b style="color:var(--s1)">O desde MoreApp:</b></div>
         <div style="margin-bottom:3px">1. Ve a tu formulario → Exportar</div>
@@ -3182,7 +3210,7 @@ function renderPhotos(u,body){
   const photos=u.photos;
   if(!photos.length&&!manualPhotos.length){
     body.innerHTML=`<div style="text-align:center;padding:36px;color:var(--s3);font-size:12px">Sin fotos registradas para esta unidad.
-      <br><button onclick="addManualPhoto('${escAttr(u.uid)}')" style="margin-top:8px;padding:5px 12px;background:none;border:1px dashed var(--ln);border-radius:6px;font-size:10px;color:var(--s1);cursor:pointer">+ Agregar foto manual</button></div>`;
+      <br><button data-action="addManualPhoto" data-arg1="${escAttr(u.uid)}" style="margin-top:8px;padding:5px 12px;background:none;border:1px dashed var(--ln);border-radius:6px;font-size:10px;color:var(--s1);cursor:pointer">+ Agregar foto manual</button></div>`;
     return;
   }
 
@@ -3190,7 +3218,7 @@ function renderPhotos(u,body){
   lbImgs=[];
   const totalPhotos=photos.length+manualPhotos.length;
   let html=`<div class="pg-header"><span class="pg-count">${totalPhotos} foto${totalPhotos!==1?"s":""}</span><span class="pg-hint">← clic para ampliar</span>
-    <button onclick="addManualPhoto('${escAttr(u.uid)}')" style="margin-left:auto;padding:3px 8px;border:1px dashed var(--ln);border-radius:5px;font-size:9px;color:var(--s1);background:none;cursor:pointer">+ Agregar foto</button>
+    <button data-action="addManualPhoto" data-arg1="${escAttr(u.uid)}" style="margin-left:auto;padding:3px 8px;border:1px dashed var(--ln);border-radius:5px;font-size:9px;color:var(--s1);background:none;cursor:pointer">+ Agregar foto</button>
   </div><div class="pg-cats">`;
 
   // Group photos
@@ -3206,7 +3234,7 @@ function renderPhotos(u,body){
       // We push a "pending" object to lbImgs, url will be resolved on open if needed
       lbImgs.push({fname: p.fname, label:p.col}); 
       
-      return`<div class="pgitem" onclick="lbOpen(${lbIdx2})">
+      return`<div class="pgitem" data-action="lbOpen" data-arg1="${lbIdx2}">
         <img data-src="${escAttr(p.fname)}" alt="${escAttr(p.col)}" style="opacity:0;transition:opacity .3s ease"
           class="lazy-img"
           onerror="this.parentElement.innerHTML='<div class=\\'pgerr\\'><div class=\\'pgerr-i\\'>🖼</div><div class=\\'pgerr-t\\'>No disponible</div></div>'"/>
@@ -3222,10 +3250,10 @@ function renderPhotos(u,body){
       const lbIdx2=lbImgs.length;
       const url=manualPhotoUrl(mp.data, mp.id);
       lbImgs.push({fname:mp.fname,label:mp.label,url});
-      return`<div class="pgitem" style="position:relative" onclick="lbOpen(${lbIdx2})">
+      return`<div class="pgitem" style="position:relative" data-action="lbOpen" data-arg1="${lbIdx2}">
         <img src="${url}" alt="${escAttr(mp.label)}" style="transition:opacity .3s ease"/>
         <div class="pglbl">${escHtml(mp.label)}</div>
-        <button onclick="event.stopPropagation();deleteManualPhoto('${escAttr(u.uid)}','${escAttr(mp.id)}')" aria-label="Eliminar foto" style="position:absolute;top:2px;right:2px;background:rgba(0,0,0,.5);color:#fff;border:none;border-radius:50%;width:28px;height:28px;font-size:11px;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center">✕</button>
+        <button data-action="deleteManualPhoto" data-arg1="${escAttr(u.uid)}" data-arg2="${escAttr(mp.id)}" data-stop-propagation="1" aria-label="Eliminar foto" style="position:absolute;top:2px;right:2px;background:rgba(0,0,0,.5);color:#fff;border:none;border-radius:50%;width:28px;height:28px;font-size:11px;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center">✕</button>
       </div>`;
     }).join("");
     html+=`<div><div class="pgcat-title" style="display:flex;align-items:center;gap:6px"><i data-lucide="camera" style="width:12px;height:12px"></i> Fotos manuales</div><div class="pgrid">${manThumbs}</div></div>`;
@@ -3248,7 +3276,7 @@ function shortLbl(col){
 // ════════════════════════════════════════════════════════════
 // LIGHTBOX
 // ════════════════════════════════════════════════════════════
-function lbOpen(idx){if(!lbImgs.length)return;lbIdx=idx;lbUpdate();document.getElementById("lb").classList.add("open")}
+function lbOpen(idx){if(!lbImgs.length)return;lbIdx=typeof idx==="string"?parseInt(idx,10):idx;lbUpdate();document.getElementById("lb").classList.add("open")}
 function lbUpdate(){
   const item=lbImgs[lbIdx];if(!item)return;
   // Resolve URL if lazy
@@ -3360,7 +3388,7 @@ function renderNotes(u, body){
         const nt=NOTE_TYPES[n.type]||NOTE_TYPES.info;
         const d=new Date(n.ts).toLocaleDateString("es-MX",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});
         return`<div class="note-item" id="ni-${n.id}">
-          <button class="note-del" onclick="deleteNote('${u.uid}','${n.id}')" title="Eliminar">✕</button>
+          <button class="note-del" data-action="deleteNote" data-arg1="${escAttr(u.uid)}" data-arg2="${escAttr(n.id)}" title="Eliminar">✕</button>
           <div class="note-meta">
             <span class="note-badge" style="background:${nt.color}22;color:${nt.color};border:1px solid ${nt.color}44">${nt.label}</span>
             <span>${d}</span>
@@ -3379,7 +3407,7 @@ function renderNotes(u, body){
       <textarea class="note-ta" id="note-input" placeholder="Escribe una observación, acción tomada, fecha de cita en taller…" aria-label="Nueva nota de seguimiento" rows="3"></textarea>
       <div class="note-row">
         <select class="note-type" id="note-type" aria-label="Tipo de nota">${typeOpts}</select>
-        <button class="note-save" onclick="addNote('${u.uid}')">+ Guardar nota</button>
+        <button class="note-save" data-action="addNote" data-arg1="${escAttr(u.uid)}">+ Guardar nota</button>
       </div>
     </div>
     <div id="note-list">${noteItems}</div>
@@ -3511,8 +3539,8 @@ function renderActionsTab(u,body){
       <div style="font-size:10px;color:var(--s2);margin-bottom:4px;font-weight:600">Crear accion desde hallazgo:</div>
       <div style="display:flex;flex-wrap:wrap;gap:4px">
         ${unresolvedFindings.slice(0,6).map(f=>{
-          const safeText=escHtml(f.text).replace(/'/g,"&#39;");
-          return`<button onclick="addAction('${uid}','${safeText}')" style="padding:3px 8px;border:1px solid ${f.lv==="Urgente"?"var(--Rl)":"var(--Al)"};border-radius:5px;font-size:9px;background:${f.lv==="Urgente"?"var(--Rd)":"var(--Ad)"};color:${f.lv==="Urgente"?"var(--R)":"var(--A)"};cursor:pointer;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${safeText}">+ ${escHtml(f.text.substring(0,30))}</button>`;
+          const textAttr=escAttr(f.text);
+          return`<button data-action="addAction" data-arg1="${escAttr(uid)}" data-arg2="${textAttr}" style="padding:3px 8px;border:1px solid ${f.lv==="Urgente"?"var(--Rl)":"var(--Al)"};border-radius:5px;font-size:9px;background:${f.lv==="Urgente"?"var(--Rd)":"var(--Ad)"};color:${f.lv==="Urgente"?"var(--R)":"var(--A)"};cursor:pointer;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${textAttr}">+ ${escHtml(f.text.substring(0,30))}</button>`;
         }).join("")}
       </div>
     </div>`;
@@ -3531,8 +3559,8 @@ function renderActionsTab(u,body){
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
           <span style="font-size:10px;font-weight:700;color:${col}">${statusIcons[a.status]} ${statusLabels[a.status]}</span>
           <div style="display:flex;gap:4px">
-            ${nextStatus?`<button onclick="updateActionStatus('${uid}','${a.id}','${nextStatus}')" style="padding:2px 6px;border:1px solid ${statusColors[nextStatus]};border-radius:4px;font-size:9px;background:none;color:${statusColors[nextStatus]};cursor:pointer">${statusLabels[nextStatus]}</button>`:""}
-            <button onclick="deleteAction('${uid}','${a.id}')" style="padding:2px 5px;border:none;background:none;color:var(--s3);cursor:pointer;font-size:10px">✕</button>
+            ${nextStatus?`<button data-action="updateActionStatus" data-arg1="${escAttr(uid)}" data-arg2="${escAttr(a.id)}" data-arg3="${escAttr(nextStatus)}" style="padding:2px 6px;border:1px solid ${statusColors[nextStatus]};border-radius:4px;font-size:9px;background:none;color:${statusColors[nextStatus]};cursor:pointer">${statusLabels[nextStatus]}</button>`:""}
+            <button data-action="deleteAction" data-arg1="${escAttr(uid)}" data-arg2="${escAttr(a.id)}" style="padding:2px 5px;border:none;background:none;color:var(--s3);cursor:pointer;font-size:10px">✕</button>
           </div>
         </div>
         <div style="font-size:11px;color:var(--w1);margin-bottom:3px">${escHtml(a.findingText)}</div>
@@ -3542,7 +3570,7 @@ function renderActionsTab(u,body){
     }).join("");
   }
 
-  html+=`<button onclick="addAction('${uid}','')" style="margin-top:6px;padding:6px 12px;border:1px dashed var(--ln);border-radius:6px;font-size:10px;background:none;color:var(--s1);cursor:pointer;width:100%">+ Agregar accion manual</button>`;
+  html+=`<button data-action="addAction" data-arg1="${escAttr(uid)}" data-arg2="" style="margin-top:6px;padding:6px 12px;border:1px dashed var(--ln);border-radius:6px;font-size:10px;background:none;color:var(--s1);cursor:pointer;width:100%">+ Agregar accion manual</button>`;
   body.innerHTML=html;
 }
 
@@ -4412,15 +4440,15 @@ function renderPeriodoBar(){
           const shortLabel=p.mes?MES_NAMES[p.mes].substring(0,3):p.label;
           const riskPct=p.units.length?Math.round(p.units.filter(x=>x.risk==="Urgente").length/p.units.length*100):0;
           const dotColor=riskPct>20?"var(--R)":riskPct>10?"var(--A)":"var(--G)";
-          return`<span class="periodo-chip${isActive?" active":""}" onclick="switchPeriodo('${escAttr(p.id)}')" title="${escAttr(p.label)} · ${p.units.length} unidades · ${riskPct}% urgente"><span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:${dotColor};margin-right:3px"></span>${escHtml(shortLabel)}</span>`
-            +`<button class="periodo-chip del" title="Eliminar periodo" onclick="deletePeriodo('${escAttr(p.id)}')">✕</button>`;
+          return`<span class="periodo-chip${isActive?" active":""}" data-action="switchPeriodo" data-arg1="${escAttr(p.id)}" title="${escAttr(p.label)} · ${p.units.length} unidades · ${riskPct}% urgente"><span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:${dotColor};margin-right:3px"></span>${escHtml(shortLabel)}</span>`
+            +`<button class="periodo-chip del" title="Eliminar periodo" data-action="deletePeriodo" data-arg1="${escAttr(p.id)}">✕</button>`;
         }).join("");
     }).join(`<span style="color:var(--ln);margin:0 2px">│</span>`);
   } else {
     chips.innerHTML = periodos.map(p=>{
       const isActive = p.id === activePeriodoId;
-      return `<span class="periodo-chip${isActive?" active":""}" onclick="switchPeriodo('${escAttr(p.id)}')">${escHtml(p.label)}</span>`
-        +`<button class="periodo-chip del" title="Eliminar periodo" onclick="deletePeriodo('${escAttr(p.id)}')">✕</button>`;
+      return `<span class="periodo-chip${isActive?" active":""}" data-action="switchPeriodo" data-arg1="${escAttr(p.id)}">${escHtml(p.label)}</span>`
+        +`<button class="periodo-chip del" title="Eliminar periodo" data-action="deletePeriodo" data-arg1="${escAttr(p.id)}">✕</button>`;
     }).join("");
   }
   const btnT=document.getElementById("btn-tendencias");
@@ -4814,8 +4842,8 @@ function renderWeeklyPeriodoBar(){
     const active = p.id===activeWeeklyPeriodoId;
     const nUrg = p.entries.filter(e=>effRisk(e)==="Urgente").length;
     const urgTag = nUrg ? `<span style="background:var(--R);color:#fff;border-radius:6px;padding:0 4px;font-size:8px;margin-left:3px;display:inline-flex;align-items:center;gap:2px">${nUrg}<i data-lucide="zap" style="width:8px;height:8px"></i></span>` : "";
-    return `<span class="sw-periodo-chip${active?" active":""}" onclick="switchWeeklyPeriodo('${escAttr(p.id)}')">${escHtml(p.label)}${urgTag}</span>
-            <span class="sw-periodo-del" onclick="deleteWeeklyPeriodo('${escAttr(p.id)}')" title="Eliminar período">✕</span>`;
+    return `<span class="sw-periodo-chip${active?" active":""}" data-action="switchWeeklyPeriodo" data-arg1="${escAttr(p.id)}">${escHtml(p.label)}${urgTag}</span>
+            <span class="sw-periodo-del" data-action="deleteWeeklyPeriodo" data-arg1="${escAttr(p.id)}" title="Eliminar período">✕</span>`;
   }).join("");
 }
 
@@ -4959,7 +4987,7 @@ function renderTableSemanales(){
     row_hdr.innerHTML = sortCols.map((k,i)=>{
       const active=swSortCol===k;
       const arrow=active?(swSortDir===1?" ▲":" ▼"):"";
-      return `<th onclick="swSort('${k}')" style="${active?"color:var(--ac)":""}">${lbls[i]}${arrow}</th>`;
+      return `<th data-action="swSort" data-arg1="${escAttr(k)}" style="${active?"color:var(--ac)":""}">${lbls[i]}${arrow}</th>`;
     }).join("") + `<th style="cursor:default">Acción</th>`; // columna de acción no sorteable
   }
 
@@ -4989,11 +5017,11 @@ function renderTableSemanales(){
       : (!weeklyHasZip && e.photos && e.photos.length>0
           ? `<span style="margin-left:5px;font-size:8px;color:var(--s3)" title="Carga el ZIP para ver fotos"><i data-lucide="camera" style="width:10px;height:10px;vertical-align:-1px"></i></span>`
           : "");
-    const clickHandler = hasPhotos ? `onclick="openSwPhotos('${escAttr(e.uid)}')"` : "";
+    const clickHandler = hasPhotos ? `data-action="openSwPhotos" data-arg1="${escAttr(e.uid)}"` : "";
 
     // ── Botón "Enviar a Taller" — solo en filas con vitales Urgentes ──────
     const tallerBtn = effectiveRisk==="Urgente"
-      ? `<button class="sw-btn-taller" onclick="event.stopPropagation();enviarATallerDesdeInspeccion('${escAttr(e.uid)}')" title="Abrir formulario de ingreso al taller">
+      ? `<button class="sw-btn-taller" data-action="enviarATallerDesdeInspeccion" data-arg1="${escAttr(e.uid)}" data-stop-propagation="1" title="Abrir formulario de ingreso al taller">
            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
            Enviar a Taller
          </button>`
@@ -5350,7 +5378,7 @@ ${tlAlert}`;
     if(!c.key) return `<th>${c.lbl}</th>`;
     const active=tlSortCol===c.key;
     const arrow=active?(tlSortDir===1?" ▲":" ▼"):"";
-    return `<th style="cursor:pointer;user-select:none${active?";color:var(--ac)":""}" onclick="tlSort('${c.key}')">${c.lbl}${arrow}</th>`;
+    return `<th style="cursor:pointer;user-select:none${active?";color:var(--ac)":""}" data-action="tlSort" data-arg1="${escAttr(c.key)}">${c.lbl}${arrow}</th>`;
   }).join("");
 
   const tbody = document.getElementById("tl-tbody");
@@ -5370,10 +5398,10 @@ ${tlAlert}`;
     const ecoKey = e.unitKey||e.id;
     const histCount = countMap.get(ecoKey)||1;
     const histBadge = histCount>1
-      ? `<span class="tl-hist-badge" onclick="event.stopPropagation();openHistorialModal('${escAttr(ecoKey)}')" title="${histCount} ingresos previos">${histCount}×</span>`
+      ? `<span class="tl-hist-badge" data-action="openHistorialModal" data-arg1="${escAttr(ecoKey)}" data-stop-propagation="1" title="${histCount} ingresos previos">${histCount}×</span>`
       : "";
     const rowBg = dias!=null&&dias>7?"background:#FFF5F5":dias!=null&&dias>3?"background:#FFFBEB":"";
-    return `<tr style="${rowBg};cursor:pointer" onclick="openTallerModal('${e.id}')" title="Clic para editar">
+    return `<tr style="${rowBg};cursor:pointer" data-action="openTallerModal" data-arg1="${escAttr(e.id)}" title="Clic para editar">
       <td style="font-weight:700;color:var(--w1)">${escHtml(e.eco||"—")}${histBadge}</td>
       <td style="font-weight:600;color:var(--ac)">${escHtml(e.plate||"—")}</td>
       <td style="font-size:10px;color:var(--s2)">${escHtml(e.sucursal||"—")}</td>
@@ -5385,7 +5413,7 @@ ${tlAlert}`;
       <td style="font-size:10px;color:var(--s1)">${escHtml(e.tecnico||"—")}</td>
       <td style="max-width:200px;color:var(--s1);font-size:10px;white-space:normal">${escHtml(e.comentario||e.refacciones||"")}</td>
       <td onclick="event.stopPropagation()">
-        <button class="tl-fin-btn" onclick="finalizarUnidad('${e.id}')" title="Marcar como Finalizado">✓ Salida</button>
+        <button class="tl-fin-btn" data-action="finalizarUnidad" data-arg1="${escAttr(e.id)}" data-stop-propagation="1" title="Marcar como Finalizado">✓ Salida</button>
       </td>
     </tr>`;
   }).join("");
@@ -5527,7 +5555,7 @@ function renderHistorial(){
     if(!c.key) return `<th style="${wStyle}">${c.lbl}</th>`;
     const active=tlSortCol===c.key;
     const arrow=active?(tlSortDir===1?" ▲":" ▼"):"";
-    return `<th style="${wStyle}cursor:pointer;user-select:none${active?";color:var(--ac)":""}" onclick="tlSort('${c.key}')">${c.lbl}${arrow}</th>`;
+    return `<th style="${wStyle}cursor:pointer;user-select:none${active?";color:var(--ac)":""}" data-action="tlSort" data-arg1="${escAttr(c.key)}">${c.lbl}${arrow}</th>`;
   }).join("");
 
   const tbody = document.getElementById("tl-tbody");
@@ -5560,7 +5588,7 @@ function renderHistorial(){
     // Tipo de la visita más reciente cerrada (pill junto a F. Salida)
     const lcTipoCls = lc.tipo==="Correctivo"?"correctivo":lc.tipo==="Preventivo"?"preventivo":"";
     const lcTipoPill = lc.tipo ? `<div style="margin-top:2px"><span class="tl-tipo ${lcTipoCls}" style="font-size:8px;padding:1px 5px">${escHtml(lc.tipo)}</span></div>` : "";
-    return `<tr style="cursor:pointer" onclick="openHistorialModal('${escAttr(ecoKey)}')" title="Clic para ver expediente completo">
+    return `<tr style="cursor:pointer" data-action="openHistorialModal" data-arg1="${escAttr(ecoKey)}" title="Clic para ver expediente completo">
       <td style="font-weight:700;color:var(--w1)">${escHtml(lc.eco||"—")}${activeTag}</td>
       <td style="font-weight:600;color:var(--ac)">${escHtml(lc.plate||"—")}</td>
       <td style="color:var(--s1)">${escHtml(lc.brand||"—")}</td>
@@ -5568,7 +5596,7 @@ function renderHistorial(){
       <td style="text-align:center;white-space:nowrap;vertical-align:top">
         <div style="display:inline-flex;align-items:center;gap:3px">
           <span class="tl-hist-badge" style="cursor:default">${totalVisits}</span>
-          <button class="tl-reing-btn" onclick="event.stopPropagation();reingresoDesdeHistorial('${escAttr(ecoKey)}')" style="padding:2px 5px" title="Nuevo ingreso al taller">↩</button>
+          <button class="tl-reing-btn" data-action="reingresoDesdeHistorial" data-arg1="${escAttr(ecoKey)}" data-stop-propagation="1" style="padding:2px 5px" title="Nuevo ingreso al taller">↩</button>
         </div>
         ${tipoMixHtml}
       </td>
@@ -5877,7 +5905,7 @@ function renderHistorialModal(){
     const bg = active ? (color||"var(--ac)") : "var(--bg2)";
     const fg = active ? "#fff" : "var(--s1)";
     const bd = active ? (color||"var(--ac)") : "var(--ln)";
-    return `<button onclick="setHistFilterTipo('${val}')" style="padding:5px 12px;border-radius:20px;border:1px solid ${bd};background:${bg};color:${fg};font-size:10px;font-weight:600;cursor:pointer;transition:all .12s;display:inline-flex;align-items:center;gap:5px">
+    return `<button data-action="setHistFilterTipo" data-arg1="${escAttr(val)}" style="padding:5px 12px;border-radius:20px;border:1px solid ${bd};background:${bg};color:${fg};font-size:10px;font-weight:600;cursor:pointer;transition:all .12s;display:inline-flex;align-items:center;gap:5px">
       ${lbl}<span style="font-size:9px;opacity:.85;background:${active?'rgba(255,255,255,.2)':'var(--bg3)'};padding:1px 6px;border-radius:10px;font-weight:700">${count}</span>
     </button>`;
   };
