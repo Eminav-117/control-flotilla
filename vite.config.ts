@@ -23,7 +23,7 @@ const verifyPwaIcons = {
   },
 };
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   root: ".",
   base: "./",
   build: {
@@ -35,6 +35,11 @@ export default defineConfig({
     // Si algún módulo src/ empieza a importar xlsx/jspdf, reintroduce chunks aquí
     // para aislarlos del bundle principal.
   },
+  // WCAG aparte — limpieza hygiene prod: esbuild drop elimina `console.*` y
+  // `debugger` del bundle producción (sigue activo en dev). Afecta solo módulos
+  // TS bajo src/; el HTML legado con inline `console.*` no pasa por esbuild.
+  esbuild:
+    mode === "production" ? { drop: ["console", "debugger"], pure: ["console.log"] } : undefined,
   test: {
     environment: "happy-dom",
     globals: true,
@@ -81,4 +86,4 @@ export default defineConfig({
       },
     }),
   ],
-});
+}));

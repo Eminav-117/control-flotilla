@@ -3,6 +3,39 @@
  * Cualquier edición a estilos debe hacerse aquí, NO en el HTML.
  */
 
+/* ═══ WCAG 2.4.7 — Focus visible keyboard navigation ═══
+   `outline:none` aplicado inline en múltiples componentes oculta el anillo
+   al hacer click con mouse (estético). `:focus-visible` restaura el
+   indicador cuando el usuario navega con teclado o lector de pantalla.
+   !important para sobrepasar selectores más específicos. */
+@supports selector(:focus-visible) {
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  a:focus-visible,
+  [tabindex]:focus-visible {
+    outline: 2px solid var(--ac) !important;
+    outline-offset: 2px !important;
+    border-radius: 4px;
+  }
+}
+
+/* ═══ WCAG 2.3.3 — Reduced motion ═══
+   Respeta `prefers-reduced-motion: reduce` del usuario (OS-level).
+   Para usuarios con vestibular disorders o migrañas. 0.01ms en vez de 0
+   mantiene los callbacks `animationend`/`transitionend` funcionando. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 *,
 *::before,
 *::after {

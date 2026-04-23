@@ -3225,7 +3225,7 @@ function renderPhotos(u,body){
       return`<div class="pgitem" style="position:relative" onclick="lbOpen(${lbIdx2})">
         <img src="${url}" alt="${escAttr(mp.label)}" style="transition:opacity .3s ease"/>
         <div class="pglbl">${escHtml(mp.label)}</div>
-        <button onclick="event.stopPropagation();deleteManualPhoto('${escAttr(u.uid)}','${escAttr(mp.id)}')" style="position:absolute;top:2px;right:2px;background:rgba(0,0,0,.5);color:#fff;border:none;border-radius:50%;width:16px;height:16px;font-size:9px;cursor:pointer;line-height:1">✕</button>
+        <button onclick="event.stopPropagation();deleteManualPhoto('${escAttr(u.uid)}','${escAttr(mp.id)}')" aria-label="Eliminar foto" style="position:absolute;top:2px;right:2px;background:rgba(0,0,0,.5);color:#fff;border:none;border-radius:50%;width:28px;height:28px;font-size:11px;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center">✕</button>
       </div>`;
     }).join("");
     html+=`<div><div class="pgcat-title" style="display:flex;align-items:center;gap:6px"><i data-lucide="camera" style="width:12px;height:12px"></i> Fotos manuales</div><div class="pgrid">${manThumbs}</div></div>`;
