@@ -195,7 +195,7 @@ g.inflateBytes=async function(src){
   </div>
   <div class="hfile" id="hfile"></div>
   <div class="hacts">
-    <div id="db-badge" class="ubtn-collapse" title="Sesión guardada localmente" style="display:none;align-items:center;gap:5px;font-size:10px;padding:4px 8px;border-radius:5px;background:#06D6A012;border:1px solid #06D6A035;color:var(--G)">
+    <div id="db-badge" class="ubtn-collapse" title="Sesión guardada localmente" style="display:none;align-items:center;gap:5px;font-size:10px;padding:4px 8px;border-radius:5px;background:var(--G)12;border:1px solid var(--G)35;color:var(--G)">
       <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
       <span class="ubtn-txt">Guardado</span>
     </div>
@@ -289,10 +289,10 @@ g.inflateBytes=async function(src){
 </div>
 
 <!-- ALERTS SUMMARY -->
-<div id="alerts-panel" style="display:none;margin:0 12px 6px;padding:10px 14px 10px 16px;background:#FEF9E7;border:1px solid #F3E4B9;border-left:3px solid var(--A);border-radius:8px;font-size:12px;line-height:1.55">
+<div id="alerts-panel" style="display:none;margin:0 12px 6px;padding:10px 14px 10px 16px;background:var(--Ad);border:1px solid var(--Al);border-left:3px solid var(--A);border-radius:8px;font-size:12px;line-height:1.55">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-    <span style="font-weight:700;color:#92400E;font-size:11px;text-transform:uppercase;letter-spacing:.8px;display:inline-flex;align-items:center;gap:6px"><i data-lucide="alert-triangle" style="width:12px;height:12px"></i>Alertas de Flota</span>
-    <button onclick="document.getElementById('alerts-panel').style.display='none'" aria-label="Cerrar alertas" style="background:none;border:none;cursor:pointer;color:#92400E;font-size:14px;padding:0 2px;line-height:1" title="Cerrar">✕</button>
+    <span style="font-weight:700;color:var(--A);font-size:11px;text-transform:uppercase;letter-spacing:.8px;display:inline-flex;align-items:center;gap:6px"><i data-lucide="alert-triangle" style="width:12px;height:12px"></i>Alertas de Flota</span>
+    <button onclick="document.getElementById('alerts-panel').style.display='none'" aria-label="Cerrar alertas" style="background:none;border:none;cursor:pointer;color:var(--A);font-size:14px;padding:0 2px;line-height:1" title="Cerrar">✕</button>
   </div>
   <div id="alerts-list"></div>
 </div>
@@ -357,7 +357,7 @@ g.inflateBytes=async function(src){
     <button class="chip" id="btn-Revisar" onclick="setF('Revisar')"><span class="chip-dot" style="background:var(--A)"></span>Revisar <span class="chip-n" id="fc1"></span></button>
     <button class="chip" id="btn-Completar" onclick="setF('Completar')" title="Unidades con al menos un hallazgo pendiente (foto, doc, info). Pendiente admin, no riesgo operativo."><span class="chip-dot" style="background:var(--B)"></span>Pendientes <span class="chip-n" id="fc4"></span></button>
     <button class="chip" id="btn-OK" onclick="setF('OK')"><span class="chip-dot" style="background:var(--G)"></span>OK <span class="chip-n" id="fc2"></span></button>
-    <button class="chip" id="btn-obs" onclick="setF('obs')"><span class="chip-dot" style="background:#6366F1"></span>Comentarios <span class="chip-n" id="fc3"></span></button>
+    <button class="chip" id="btn-obs" onclick="setF('obs')"><span class="chip-dot" style="background:var(--ac)"></span>Comentarios <span class="chip-n" id="fc3"></span></button>
     <button class="chip" id="btn-taller" onclick="setF('taller')"><span class="chip-dot" style="background:var(--B)"></span>Taller <span class="chip-n" id="fc_taller"></span></button>
     <button class="chip" id="btn-svcvencido" onclick="setF('svcvencido')"><span class="chip-dot" style="background:var(--R)"></span>Svc ≤30d <span class="chip-n" id="fc_svc"></span></button>
   </div>
@@ -2342,7 +2342,7 @@ function buildKPIs(){
   const donutEl = document.getElementById("kpi-donut");
   if (donutEl && typeof window.renderDonutChart === "function") {
     const cs = getComputedStyle(document.documentElement);
-    const cR = cs.getPropertyValue("--R").trim() || "#E11D48";
+    const cR = cs.getPropertyValue("--R").trim() || "var(--R)";
     const cA = cs.getPropertyValue("--A").trim() || "var(--A)";
     const cG = cs.getPropertyValue("--G").trim() || "var(--G)";
     try {
@@ -2603,7 +2603,7 @@ function buildAlertsSummary(){
   // 5. Unidades con hallazgos "Completar" pendientes
   const completar=units.filter(u=>u.F.some(f=>f.lv==="Completar"));
   if(completar.length)
-    alerts.push({icon:`<i data-lucide="clipboard-list" style="width:13px;height:13px;color:#2563EB;vertical-align:-2px"></i>`,color:"#2563EB",text:`<b>${completar.length}</b> unidad${completar.length!==1?"es":""} con hallazgos <b>pendientes de completar</b>`,
+    alerts.push({icon:`<i data-lucide="clipboard-list" style="width:13px;height:13px;color:var(--ac);vertical-align:-2px"></i>`,color:"var(--ac)",text:`<b>${completar.length}</b> unidad${completar.length!==1?"es":""} con hallazgos <b>pendientes de completar</b>`,
       action:"Completar"});
 
   // Render
@@ -2627,7 +2627,7 @@ function buildAlertsSummary(){
     box.appendChild(txt);
     if(a.detail){
       const det=document.createElement("span");
-      det.style.cssText="color:#78716C;margin-left:4px;font-size:11px";
+      det.style.cssText="color:var(--s2);margin-left:4px;font-size:11px";
       det.innerHTML=" — "+a.detail;
       box.appendChild(det);
     }
@@ -2703,7 +2703,7 @@ function renderTable(){
     const tr = document.createElement("div");
     tr.className = `tr ${rc}${selId === u.uid ? " sel" : ""}`;
     tr.style.animationDelay = `${Math.min(i * 12, 260)}ms`;
-    if(enTallerUnit) tr.style.outline = "1.5px solid #c4b5fd";
+    if(enTallerUnit) tr.style.outline = "1.5px solid var(--B)";
     tr.onclick = () => selUnit(u.uid);
 
     // # Índice
@@ -3584,30 +3584,40 @@ async function exportPDF(){
   const PW=210, PH=297, M=14, CW=PW-M*2;
   let y=M;
 
+  // Resuelve CSS var a hex — jsPDF no entiende var(...), necesita literal.
+  // Sample una vez al inicio por performance. Fallback "#000" si var vacía.
+  const _rootStyle = getComputedStyle(document.documentElement);
+  const rc = (v) => {
+    if(typeof v !== "string" || !v.startsWith("var(")) return v;
+    const m = v.match(/--[^),\s]+/);
+    if(!m) return v;
+    return (_rootStyle.getPropertyValue(m[0]).trim() || "#000");
+  };
+
   const C={
-    R:"var(--R)", A:"var(--A)", G:"var(--G)", B:"var(--B)",
-    T:"#0D9488",
-    bg:"#FFFFFF", bg2:"#F7F8FA", bg3:"#F0F1F4",
-    ln:"#EAEBED", s1:"var(--s2)", s2:"#94A3B8", s3:"#CBD5E1",
-    w1:"#0F172A", w2:"#334155"
+    R:rc("var(--R)"), A:rc("var(--A)"), G:rc("var(--G)"), B:rc("var(--B)"),
+    T:rc("var(--ac)"),
+    bg:"#FFFFFF", bg2:rc("var(--bg2)"), bg3:rc("var(--bg2)"),
+    ln:rc("var(--ln)"), s1:rc("var(--s2)"), s2:rc("var(--s2)"), s3:rc("var(--s3)"),
+    w1:rc("var(--w1)"), w2:rc("var(--w2)")
   };
   const riskColor=u.risk==="Urgente"?C.R:u.risk==="Revisar"?C.A:u.risk==="Completar"?C.B:C.G;
 
   // helper: add page if needed
   const chk=(need=10)=>{ if(y+need>PH-M){ doc.addPage(); y=M; drawPageHeader(); } };
-  const line=(x1,y1,x2,y2,col="#EAEBED",w=0.3)=>{
-    doc.setDrawColor(col); doc.setLineWidth(w); doc.line(x1,y1,x2,y2);
+  const line=(x1,y1,x2,y2,col=C.ln,w=0.3)=>{
+    doc.setDrawColor(rc(col)); doc.setLineWidth(w); doc.line(x1,y1,x2,y2);
   };
   const rect=(x,yy,w,h,fill,stroke)=>{
-    if(fill){doc.setFillColor(fill);doc.rect(x,yy,w,h,"F");}
-    if(stroke){doc.setDrawColor(stroke);doc.setLineWidth(0.3);doc.rect(x,yy,w,h,"S");}
+    if(fill){doc.setFillColor(rc(fill));doc.rect(x,yy,w,h,"F");}
+    if(stroke){doc.setDrawColor(rc(stroke));doc.setLineWidth(0.3);doc.rect(x,yy,w,h,"S");}
   };
   const rrect=(x,yy,w,h,r,fill,stroke)=>{
-    if(fill){doc.setFillColor(fill);doc.roundedRect(x,yy,w,h,r,r,"F");}
-    if(stroke){doc.setDrawColor(stroke);doc.setLineWidth(0.3);doc.roundedRect(x,yy,w,h,r,r,"S");}
+    if(fill){doc.setFillColor(rc(fill));doc.roundedRect(x,yy,w,h,r,r,"F");}
+    if(stroke){doc.setDrawColor(rc(stroke));doc.setLineWidth(0.3);doc.roundedRect(x,yy,w,h,r,r,"S");}
   };
-  const txt=(t,x,yy,size=9,col="var(--s2)",align="left",bold=false)=>{
-    doc.setFontSize(size);doc.setTextColor(col);
+  const txt=(t,x,yy,size=9,col=C.s2,align="left",bold=false)=>{
+    doc.setFontSize(size);doc.setTextColor(rc(col));
     doc.setFont("helvetica",bold?"bold":"normal");
     doc.text(String(t),x,yy,{align});
   };
@@ -3626,8 +3636,8 @@ async function exportPDF(){
 
 
   // ── PORTADA ─────────────────────────────────────────────
-  const riskBg  =u.risk==="Urgente"?"#FEE2E2":u.risk==="Revisar"?"#FFFBEB":u.risk==="Completar"?"#F5F3FF":"#DCFCE7";
-  const riskBord=u.risk==="Urgente"?"#FECACA":u.risk==="Revisar"?"#FDE68A":u.risk==="Completar"?"#C4B5FD":"#86EFAC";
+  const riskBg  =u.risk==="Urgente"?"var(--Rl)":u.risk==="Revisar"?"var(--Ad)":u.risk==="Completar"?"var(--Bd)":"var(--Gl)";
+  const riskBord=u.risk==="Urgente"?"var(--Rl)":u.risk==="Revisar"?"var(--A)":u.risk==="Completar"?"var(--B)":"var(--G)";
   drawPageHeader(); y=24;
 
   // Tarjeta de identidad de la unidad
@@ -3685,7 +3695,7 @@ async function exportPDF(){
       y+=2;
     }
   } else {
-    rect(M,y,CW,10,"#DCFCE7");
+    rect(M,y,CW,10,"var(--Gl)");
     txt("Sin hallazgos detectados",M+CW/2,y+6.5,9,C.G,"center");
     y+=14;
   }
@@ -3708,7 +3718,7 @@ async function exportPDF(){
     }
     if(u.minT!==null){
       const mc=u.minT<=3?C.R:u.minT<=5?C.A:C.G;
-      const mcBg=u.minT<=3?"#FEE2E2":u.minT<=5?"#FFFBEB":"#DCFCE7";
+      const mcBg=u.minT<=3?"var(--Rl)":u.minT<=5?"var(--Ad)":"var(--Gl)";
       rect(M,y,CW,7,mcBg);
       txt(`Taco mínimo: ${u.minT}mm — ${u.minT<=3?"Reemplazo urgente":u.minT<=5?"Programar reemplazo":"Buen estado"}`,M+CW/2,y+4.5,8,mc,"center",true);
       y+=10;
@@ -3724,8 +3734,8 @@ async function exportPDF(){
       chk(14);
       const nt=NOTE_TYPES[n.type]||NOTE_TYPES.info;
       const d=new Date(n.ts).toLocaleDateString("es-MX",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"});
-      const nc=nt.color.replace("var(--B)","#4A9EFF").replace("var(--O)","#FF8C00")
-        .replace("var(--R)","#F53B3B").replace("var(--s3)","#4A5A70");
+      const nc=nt.color.replace("var(--B)","var(--ac)").replace("var(--O)","var(--O)")
+        .replace("var(--R)","var(--R)").replace("var(--s3)","var(--s1)");
       rect(M,y-3,CW,1,nc);
       txt(nt.label.toUpperCase(),M,y+3,6,nc,undefined,true);
       txt(d,PW-M,y+3,6,C.s3,"right");
@@ -3902,28 +3912,37 @@ async function exportFleetPDF(){
   const PW=210, PH=297, M=14, CW=PW-M*2;
   let y=M;
 
+  // Resuelve CSS var a hex — jsPDF necesita literal.
+  const _rootStyle = getComputedStyle(document.documentElement);
+  const rc = (v) => {
+    if(typeof v !== "string" || !v.startsWith("var(")) return v;
+    const m = v.match(/--[^),\s]+/);
+    if(!m) return v;
+    return (_rootStyle.getPropertyValue(m[0]).trim() || "#000");
+  };
+
   const C={
-    R:"var(--R)", A:"var(--A)", G:"var(--G)", B:"var(--B)",
-    T:"#0D9488",
-    bg:"#FFFFFF", bg2:"#F7F8FA", bg3:"#F0F1F4",
-    ln:"#EAEBED", s1:"var(--s2)", s2:"#94A3B8", s3:"#CBD5E1",
-    w1:"#0F172A", w2:"#334155"
+    R:rc("var(--R)"), A:rc("var(--A)"), G:rc("var(--G)"), B:rc("var(--B)"),
+    T:rc("var(--ac)"),
+    bg:"#FFFFFF", bg2:rc("var(--bg2)"), bg3:rc("var(--bg2)"),
+    ln:rc("var(--ln)"), s1:rc("var(--s2)"), s2:rc("var(--s2)"), s3:rc("var(--s3)"),
+    w1:rc("var(--w1)"), w2:rc("var(--w2)")
   };
 
   const chk=(need=10)=>{ if(y+need>PH-14){ doc.addPage(); y=M; drawPageHeader(); } };
-  const line=(x1,y1,x2,y2,col="#EAEBED",w=0.3)=>{
-    doc.setDrawColor(col); doc.setLineWidth(w); doc.line(x1,y1,x2,y2);
+  const line=(x1,y1,x2,y2,col=C.ln,w=0.3)=>{
+    doc.setDrawColor(rc(col)); doc.setLineWidth(w); doc.line(x1,y1,x2,y2);
   };
   const rect=(x,yy,w,h,fill,stroke)=>{
-    if(fill){doc.setFillColor(fill);doc.rect(x,yy,w,h,"F");}
-    if(stroke){doc.setDrawColor(stroke);doc.setLineWidth(0.3);doc.rect(x,yy,w,h,"S");}
+    if(fill){doc.setFillColor(rc(fill));doc.rect(x,yy,w,h,"F");}
+    if(stroke){doc.setDrawColor(rc(stroke));doc.setLineWidth(0.3);doc.rect(x,yy,w,h,"S");}
   };
   const rrect=(x,yy,w,h,r,fill,stroke)=>{
-    if(fill){doc.setFillColor(fill);doc.roundedRect(x,yy,w,h,r,r,"F");}
-    if(stroke){doc.setDrawColor(stroke);doc.setLineWidth(0.3);doc.roundedRect(x,yy,w,h,r,r,"S");}
+    if(fill){doc.setFillColor(rc(fill));doc.roundedRect(x,yy,w,h,r,r,"F");}
+    if(stroke){doc.setDrawColor(rc(stroke));doc.setLineWidth(0.3);doc.roundedRect(x,yy,w,h,r,r,"S");}
   };
-  const txt=(t,x,yy,size=9,col="var(--s2)",align="left",bold=false)=>{
-    doc.setFontSize(size); doc.setTextColor(col);
+  const txt=(t,x,yy,size=9,col=C.s2,align="left",bold=false)=>{
+    doc.setFontSize(size); doc.setTextColor(rc(col));
     doc.setFont("helvetica",bold?"bold":"normal");
     doc.text(String(t==null?"—":t),x,yy,{align});
   };
@@ -3954,11 +3973,11 @@ async function exportFleetPDF(){
   // ══════════════════════════════════════════════════════════
   // Franja superior de color sólido
   rect(0,0,PW,52,C.T);
-  doc.setFillColor("#0F766E"); doc.rect(0,44,PW,8,"F");
+  doc.setFillColor(rc("var(--ac2)")); doc.rect(0,44,PW,8,"F");
 
   txt("GPA FLEET COMMAND",PW/2,22,22,C.bg,"center",true);
-  txt("REPORTE EJECUTIVO DE FLOTILLA",PW/2,34,11,"#D4F0ED","center",true);
-  txt(dateStr.toUpperCase(),PW/2,43,7.5,"#99C5C2","center");
+  txt("REPORTE EJECUTIVO DE FLOTILLA",PW/2,34,11,"var(--acl)","center",true);
+  txt(dateStr.toUpperCase(),PW/2,43,7.5,"var(--s2)","center");
 
   // ── KPI cards en 2 filas de 3 ────────────────────────────
   y=62;
@@ -4036,7 +4055,7 @@ async function exportFleetPDF(){
   sorted.forEach((u,idx)=>{
     chk(7);
     const rc=u.risk==="Urgente"?C.R:u.risk==="Revisar"?C.A:u.risk==="Completar"?C.B:C.G;
-    const bg=u.risk==="Urgente"?"#FEE2E2":u.risk==="Revisar"?"#FFFBEB":u.risk==="Completar"?"#F5F3FF":idx%2===0?C.bg2:C.bg;
+    const bg=u.risk==="Urgente"?"var(--Rl)":u.risk==="Revisar"?"var(--Ad)":u.risk==="Completar"?"var(--Bd)":idx%2===0?C.bg2:C.bg;
     rect(M,y,CW,7,bg);
     const fu=u.F.filter(f=>f.lv==="Urgente").length;
     const fr=u.F.filter(f=>f.lv==="Revisar").length;
@@ -4069,7 +4088,7 @@ async function exportFleetPDF(){
   const urgentes=sorted.filter(u=>u.risk==="Urgente");
   if(urgentes.length){
     doc.addPage(); drawPageHeader();
-    rrect(M,y,CW,11,2,"#FEE2E2","#FECACA");
+    rrect(M,y,CW,11,2,"var(--Rl)","var(--Rl)");
     rect(M,y,3,11,C.R);
     txt("UNIDADES URGENTES",M+7,y+4.5,10,C.R,"left",true);
     txt(`${urgentes.length} unidad${urgentes.length>1?"es requieren":"requiere"} atencion inmediata`,M+7,y+9.5,7,C.R);
@@ -4078,7 +4097,7 @@ async function exportFleetPDF(){
     for(const u of urgentes){
       chk(28);
       // Tarjeta de cabecera de unidad
-      rrect(M,y,CW,11,2,"#FFF5F5","#FCA5A5");
+      rrect(M,y,CW,11,2,"var(--Rd)","var(--R)");
       rect(M,y,3.5,11,C.R);
       txt(u.plate||u.eco||"—",M+7,y+7,11,C.w1,"left",true);
       txt(u.brand||"—",M+30,y+4,7,C.s1);
@@ -4114,7 +4133,7 @@ async function exportFleetPDF(){
       // Llantas críticas
       if(u.minT!=null&&u.minT<=TCRIT){
         chk(7);
-        rrect(M+3,y,CW-3,6.5,1.5,"#FEF2F2","#FECACA");
+        rrect(M+3,y,CW-3,6.5,1.5,"var(--Rd)","var(--Rl)");
         txt(`Llanta mínima: ${u.minT}mm — REEMPLAZO URGENTE`,M+6,y+4.5,6.5,C.R,"left",true);
         y+=9;
       }
@@ -4129,7 +4148,7 @@ async function exportFleetPDF(){
   const revisares=sorted.filter(u=>u.risk==="Revisar");
   if(revisares.length){
     doc.addPage(); drawPageHeader();
-    rrect(M,y,CW,11,2,"#FFFBEB","#FDE68A");
+    rrect(M,y,CW,11,2,"var(--Ad)","var(--A)");
     rect(M,y,3,11,C.A);
     txt("UNIDADES A REVISAR",M+7,y+4.5,10,C.A,"left",true);
     txt(`${revisares.length} unidad${revisares.length>1?"es requieren":"requiere"} seguimiento programado`,M+7,y+9.5,7,C.A);
@@ -4139,7 +4158,7 @@ async function exportFleetPDF(){
     const RC=[8,24,40,34,22,18,18,18];
     const RX=[M]; for(let i=0;i<RC.length-1;i++) RX.push(RX[RX.length-1]+RC[i]);
     const RH=["#","ECO / PLACA","MARCA","SUCURSAL","U · R · C","LLANTA","KM","FECHA"];
-    rect(M,y,CW,7,"#FEF3C7");
+    rect(M,y,CW,7,"var(--Al)");
     RH.forEach((h,i)=>{ txt(h,RX[i]+1,y+5,5.5,C.A,"left",true); });
     y+=7;
 
@@ -4198,7 +4217,7 @@ async function exportFleetPDF(){
   if(completar.length){
     chk(30);
     line(M,y,M+CW,y,C.ln); y+=8;
-    rrect(M,y,CW,11,2,"#F5F3FF","#C4B5FD");
+    rrect(M,y,CW,11,2,"var(--Bd)","var(--B)");
     rect(M,y,3,11,C.B);
     txt("UNIDADES CON DOCUMENTACIÓN PENDIENTE",M+7,y+4.5,9,C.B,"left",true);
     txt(`${completar.length} unidades`,PW-M,y+7,7,C.B,"right");
@@ -4545,18 +4564,18 @@ function showTendencias(){
     const prevUids=new Set(prev.units.filter(u=>u.risk==="Urgente").map(u=>u.uid||u.eco||u.plate));
     const newUrg=last.units.filter(u=>u.risk==="Urgente"&&!prevUids.has(u.uid||u.eco||u.plate));
     if(newUrg.length){
-      html+=`<div style="margin-top:16px;padding:10px 12px;background:#FEF2F2;border:1px solid #FECACA;border-radius:8px">
-        <div style="font-size:11px;font-weight:700;color:#991B1B;margin-bottom:4px;display:flex;align-items:center;gap:6px"><i data-lucide="alert-triangle" style="width:12px;height:12px"></i> ${newUrg.length} unidad${newUrg.length!==1?"es":""} pasaron a Urgente este período:</div>
-        <div style="font-size:11px;color:#7F1D1D">${newUrg.slice(0,10).map(u=>`${escHtml(u.eco||u.plate)} (${escHtml(u.brand||"")})`).join(" · ")}${newUrg.length>10?` y ${newUrg.length-10} más`:""}</div>
+      html+=`<div style="margin-top:16px;padding:10px 12px;background:var(--Rd);border:1px solid var(--Rl);border-radius:8px">
+        <div style="font-size:11px;font-weight:700;color:var(--R);margin-bottom:4px;display:flex;align-items:center;gap:6px"><i data-lucide="alert-triangle" style="width:12px;height:12px"></i> ${newUrg.length} unidad${newUrg.length!==1?"es":""} pasaron a Urgente este período:</div>
+        <div style="font-size:11px;color:var(--w1)">${newUrg.slice(0,10).map(u=>`${escHtml(u.eco||u.plate)} (${escHtml(u.brand||"")})`).join(" · ")}${newUrg.length>10?` y ${newUrg.length-10} más`:""}</div>
       </div>`;
     }
     // Units that improved (were Urgente, now OK or Revisar)
     const lastUids=new Map(last.units.map(u=>[u.uid||u.eco||u.plate,u.risk]));
     const improved=prev.units.filter(u=>u.risk==="Urgente"&&lastUids.has(u.uid||u.eco||u.plate)&&lastUids.get(u.uid||u.eco||u.plate)!=="Urgente");
     if(improved.length){
-      html+=`<div style="margin-top:8px;padding:10px 12px;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px">
-        <div style="font-size:11px;font-weight:700;color:#166534;margin-bottom:4px;display:flex;align-items:center;gap:6px"><i data-lucide="check-circle-2" style="width:12px;height:12px"></i> ${improved.length} unidad${improved.length!==1?"es":""} mejoraron desde Urgente:</div>
-        <div style="font-size:11px;color:#15803D">${improved.slice(0,10).map(u=>`${escHtml(u.eco||u.plate)} → ${escHtml(lastUids.get(u.uid||u.eco||u.plate))}`).join(" · ")}${improved.length>10?` y ${improved.length-10} más`:""}</div>
+      html+=`<div style="margin-top:8px;padding:10px 12px;background:var(--Gd);border:1px solid var(--Gl);border-radius:8px">
+        <div style="font-size:11px;font-weight:700;color:var(--G);margin-bottom:4px;display:flex;align-items:center;gap:6px"><i data-lucide="check-circle-2" style="width:12px;height:12px"></i> ${improved.length} unidad${improved.length!==1?"es":""} mejoraron desde Urgente:</div>
+        <div style="font-size:11px;color:var(--G)">${improved.slice(0,10).map(u=>`${escHtml(u.eco||u.plate)} → ${escHtml(lastUids.get(u.uid||u.eco||u.plate))}`).join(" · ")}${improved.length>10?` y ${improved.length-10} más`:""}</div>
       </div>`;
     }
   }
@@ -4909,20 +4928,20 @@ function buildKPIsSemanales(){
       <div class="ksub">${nBodyUrg?'<i data-lucide="zap" style="width:9px;height:9px;vertical-align:-1px"></i> '+nBodyUrg+" grave":""} ${nBodyRev?'<i data-lucide="alert-triangle" style="width:9px;height:9px;vertical-align:-1px"></i> '+nBodyRev+" leve":(!nBodyUrg&&!nBodyRev)?"Sin daños":""}</div>
     </div>
     <div class="kc btn" onclick="swSetF('llanta')" title="Filtrar por llanta de refacción">
-      <div class="ktop" style="background:#8B5CF6"></div>
+      <div class="ktop" style="background:var(--B)"></div>
       <div class="klbl" style="display:flex;align-items:center;gap:5px"><i data-lucide="wrench" style="width:11px;height:11px"></i> Llanta Ref.</div>
       <div class="kval" style="color:${nTireRev?"var(--A)":"var(--G)"}">${nTireRev||"0"}</div>
       <div class="ksub">${nTireRev?'<i data-lucide="alert-triangle" style="width:9px;height:9px;vertical-align:-1px"></i> '+nTireRev+" sin refacción func.":"Todas funcionales"}</div>
       <div class="kprog" style="background:var(--A);width:${pct(nTireRev)}%"></div>
     </div>
     <div class="kc">
-      <div class="ktop" style="background:#0EA5E9"></div>
+      <div class="ktop" style="background:var(--ac)"></div>
       <div class="klbl">🛢 Aceite Motor</div>
       <div class="kval" style="color:${nAcUrg?"var(--R)":nAcRev?"var(--A)":"var(--G)"}">${nAcUrg||nAcRev||"0"}</div>
       <div class="ksub">${nAcUrg?'<i data-lucide="zap" style="width:9px;height:9px;vertical-align:-1px"></i> '+nAcUrg+" crítico ":""}${nAcRev?'<i data-lucide="alert-triangle" style="width:9px;height:9px;vertical-align:-1px"></i> '+nAcRev+" bajo":(!nAcUrg?"Sin alertas":"")}</div>
     </div>
     <div class="kc">
-      <div class="ktop" style="background:#6366F1"></div>
+      <div class="ktop" style="background:var(--ac)"></div>
       <div class="klbl" style="display:flex;align-items:center;gap:5px"><i data-lucide="droplet" style="width:11px;height:11px"></i> Radiador</div>
       <div class="kval" style="color:${nRaUrg?"var(--R)":nRaRev?"var(--A)":"var(--G)"}">${nRaUrg||nRaRev||"0"}</div>
       <div class="ksub">${nRaUrg?'<i data-lucide="zap" style="width:9px;height:9px;vertical-align:-1px"></i> '+nRaUrg+" crítico ":""}${nRaRev?'<i data-lucide="alert-triangle" style="width:9px;height:9px;vertical-align:-1px"></i> '+nRaRev+" bajo":(!nRaUrg?"Sin alertas":"")}</div>
@@ -5325,7 +5344,7 @@ function renderActivas(){
 ${tlAlert}`;
   // Hover: leyenda ↔ segmento + % y tag dinámico (dona taller)
   const tlPctOf = n => nActAll ? Math.round((n/nActAll)*100) : 0;
-  const TL_DTAG_BG={"var(--A)":"var(--A)15","var(--s3)":"#6B728015","var(--G)":"#06D6A015","var(--R)":"var(--R)15"};
+  const TL_DTAG_BG={"var(--A)":"var(--A)15","var(--s3)":"var(--s3)15","var(--G)":"var(--G)15","var(--R)":"var(--R)15"};
   const tlHoverMap={
     rev:{pct:tlPctOf(nRev),lbl:"EN REVISIÓN",color:"var(--A)"},
     sin:{pct:tlPctOf(nSin),lbl:"SIN REG.",color:"var(--s3)"}
@@ -5339,7 +5358,7 @@ ${tlAlert}`;
     document.querySelectorAll("#tl-dwrap .dsvg circle[data-k]").forEach(x=>{if(x.dataset.k!==k)x.classList.add("dim")});
     const h=tlHoverMap[k];if(!h)return;
     if(tlDp){tlDp.textContent=h.pct+"%";tlDp.style.color=h.color;}
-    if(tlDtag){tlDtag.textContent=h.lbl;tlDtag.style.color=h.color;tlDtag.style.background=TL_DTAG_BG[h.color]||"#F3F4F6";}
+    if(tlDtag){tlDtag.textContent=h.lbl;tlDtag.style.color=h.color;tlDtag.style.background=TL_DTAG_BG[h.color]||"var(--bg3)";}
   };
   const tlLeaveK=()=>{
     document.querySelectorAll("#tl-dleg .dleg-i.dim,#tl-dwrap .dsvg circle.dim").forEach(x=>x.classList.remove("dim"));
@@ -5400,7 +5419,7 @@ ${tlAlert}`;
     const histBadge = histCount>1
       ? `<span class="tl-hist-badge" data-action="openHistorialModal" data-arg1="${escAttr(ecoKey)}" data-stop-propagation="1" title="${histCount} ingresos previos">${histCount}×</span>`
       : "";
-    const rowBg = dias!=null&&dias>7?"background:#FFF5F5":dias!=null&&dias>3?"background:#FFFBEB":"";
+    const rowBg = dias!=null&&dias>7?"background:var(--Rd)":dias!=null&&dias>3?"background:var(--Ad)":"";
     return `<tr style="${rowBg};cursor:pointer" data-action="openTallerModal" data-arg1="${escAttr(e.id)}" title="Clic para editar">
       <td style="font-weight:700;color:var(--w1)">${escHtml(e.eco||"—")}${histBadge}</td>
       <td style="font-weight:600;color:var(--ac)">${escHtml(e.plate||"—")}</td>
@@ -5583,7 +5602,7 @@ function renderHistorial(){
     const nPrev= entries.filter(x=>x.tipo==="Preventivo").length;
     const tipoMixHtml = (nCor||nPrev)
       ? `<div style="font-size:8px;margin-top:2px;white-space:nowrap;line-height:1.1">
-          ${nCor?`<span style="color:#B91C1C;font-weight:700" title="${nCor} correctivo${nCor!==1?"s":""}">${nCor}C</span>`:""}${nCor&&nPrev?`<span style="color:var(--s3);margin:0 3px">·</span>`:""}${nPrev?`<span style="color:#5B21B6;font-weight:700" title="${nPrev} preventivo${nPrev!==1?"s":""}">${nPrev}P</span>`:""}
+          ${nCor?`<span style="color:var(--R);font-weight:700" title="${nCor} correctivo${nCor!==1?"s":""}">${nCor}C</span>`:""}${nCor&&nPrev?`<span style="color:var(--s3);margin:0 3px">·</span>`:""}${nPrev?`<span style="color:var(--B);font-weight:700" title="${nPrev} preventivo${nPrev!==1?"s":""}">${nPrev}P</span>`:""}
         </div>` : "";
     // Tipo de la visita más reciente cerrada (pill junto a F. Salida)
     const lcTipoCls = lc.tipo==="Correctivo"?"correctivo":lc.tipo==="Preventivo"?"preventivo":"";
@@ -5912,8 +5931,8 @@ function renderHistorialModal(){
   const filterBar = `<div style="display:flex;align-items:center;gap:8px;padding:10px 20px;border-bottom:1px solid var(--ln);background:var(--bg);flex-wrap:wrap">
     <span style="font-size:10px;color:var(--s2);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-right:4px">Filtrar:</span>
     ${mkChip("all","Todos",allEntries.length,null)}
-    ${mkChip("Correctivo","Correctivo",nCor,"#B91C1C")}
-    ${mkChip("Preventivo","Preventivo",nPrev,"#5B21B6")}
+    ${mkChip("Correctivo","Correctivo",nCor,"var(--R)")}
+    ${mkChip("Preventivo","Preventivo",nPrev,"var(--B)")}
     ${nSinTipo?`<span style="font-size:9px;color:var(--s3);margin-left:auto">${nSinTipo} sin tipo</span>`:""}
   </div>`;
 
@@ -5924,7 +5943,7 @@ function renderHistorialModal(){
     const tipoCls = e.tipo==="Correctivo"?"correctivo":e.tipo==="Preventivo"?"preventivo":"";
     // "ACTUAL" se calcula contra la lista completa, no la filtrada
     const isLatest = e === allEntries[0];
-    const rowBg = e.estado==="En Revisión"?"background:#FFFBEB":isCl?"background:#F0FDF4":"";
+    const rowBg = e.estado==="En Revisión"?"background:var(--Ad)":isCl?"background:var(--Gd)":"";
     const diasReales = e.fentrada&&e.fsalidaReal ? Math.max(0,Math.round((new Date(e.fsalidaReal)-new Date(e.fentrada))/(86400*1000))) : null;
     const idxInAll = allEntries.indexOf(e);
     const numLabel = allEntries.length - idxInAll;
