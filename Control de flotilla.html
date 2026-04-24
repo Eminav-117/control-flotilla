@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <!-- CSP segunda línea de defensa (la primaria está en nginx). Cubre file:// y dev.
      Nota: frame-ancestors omitido aquí (browsers lo ignoran en meta — está en header nginx). -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-spoNzrFYGIL2O8R7ecquXngwmbxgYk7nmX1xlwYjExU=' 'sha256-Z7Mjh1RPn3a8kg8hBt3qldUGzKcjKTtyzXtc2X70hWc=' 'sha256-uyyxlbeXQNSZRUaWKeF8PEKDyrK9RlIbGSJBr24t62w=' 'sha256-/XXzj5wmgXuk90OXTB1SxIXQHzcb/++VkhovgT8xXZI='; script-src-attr 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; connect-src 'self'; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self'"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-spoNzrFYGIL2O8R7ecquXngwmbxgYk7nmX1xlwYjExU=' 'sha256-Z7Mjh1RPn3a8kg8hBt3qldUGzKcjKTtyzXtc2X70hWc=' 'sha256-uyyxlbeXQNSZRUaWKeF8PEKDyrK9RlIbGSJBr24t62w=' 'sha256-W558Hf69Ufct5UEvJq0WmHBlJz+OTFO2vRP8FiI5O7w='; script-src-attr 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; connect-src 'self'; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self'"/>
 <title>GPA Fleet Command</title>
 <script>
   // Anti-FOUC: aplicar tema ANTES de cargar CSS para evitar flash.
@@ -327,7 +327,12 @@ g.inflateBytes=async function(src){
           <div class="chart-hint">% Urgente · Revisar · Operativa</div>
         </div>
         <div id="chart-trend" style="width:100%;height:260px"></div>
-        <div id="chart-trend-empty" class="chart-empty" hidden>Carga ≥2 períodos mensuales para ver tendencia histórica.</div>
+        <div id="chart-trend-empty" class="chart-empty" hidden>
+          <i data-lucide="trending-up" class="chart-empty-icon"></i>
+          <div class="chart-empty-title">Sin tendencia histórica</div>
+          <div class="chart-empty-msg">Necesitas al menos 2 períodos mensuales para comparar.</div>
+          <div class="chart-empty-hint">Carga un XLSX adicional con el botón <b>“Actualizar Excel”</b>.</div>
+        </div>
       </div>
       <div class="chart-card" id="chart-card-heatmap">
         <div class="chart-card-header">
@@ -335,7 +340,12 @@ g.inflateBytes=async function(src){
           <div class="chart-hint">90 días · hover ver count</div>
         </div>
         <div id="chart-heatmap" style="width:100%;height:260px"></div>
-        <div id="chart-heatmap-empty" class="chart-empty" hidden>Sin ingresos a taller registrados en los últimos 90 días.</div>
+        <div id="chart-heatmap-empty" class="chart-empty" hidden>
+          <i data-lucide="wrench" class="chart-empty-icon"></i>
+          <div class="chart-empty-title">Sin ingresos a taller</div>
+          <div class="chart-empty-msg">No hay registros en los últimos 90 días.</div>
+          <div class="chart-empty-hint">Registra ingresos desde la pestaña <b>Taller</b> o importa un Excel.</div>
+        </div>
       </div>
       <div class="chart-card chart-card-wide" id="chart-card-km">
         <div class="chart-card-header">
@@ -343,7 +353,12 @@ g.inflateBytes=async function(src){
           <div class="chart-hint">Línea diagonal = vigente · debajo = vencido</div>
         </div>
         <div id="chart-km" style="width:100%;height:320px"></div>
-        <div id="chart-km-empty" class="chart-empty" hidden>Sin unidades con km_actual y km_siguiente_servicio poblados.</div>
+        <div id="chart-km-empty" class="chart-empty" hidden>
+          <i data-lucide="gauge" class="chart-empty-icon"></i>
+          <div class="chart-empty-title">Sin datos de kilometraje</div>
+          <div class="chart-empty-msg">Ninguna unidad tiene <code>Kilometraje</code> + <code>Kilometraje del siguiente servicio</code>.</div>
+          <div class="chart-empty-hint">Completa esos campos en MoreApp para ver el scatter predictivo.</div>
+        </div>
       </div>
     </div>
   </div>
@@ -2485,8 +2500,12 @@ function buildAnalytics(){
   const trendEmpty = document.getElementById("chart-trend-empty");
   const allPeriodos = Array.isArray(window.periodos) ? window.periodos : [];
   const hasTrend = allPeriodos.length >= 2;
+  // chart-card marca data-empty="1" cuando no hay data — CSS colapsa con display:none.
+  // En modo "analytics full" (futuro tab dedicado) se ignorará data-empty para mostrar empty states.
+  const trendCard = document.getElementById("chart-card-trend");
   if(trendEl){
     if(hasTrend && typeof window.renderTrendChart === "function"){
+      if(trendCard) trendCard.removeAttribute("data-empty");
       trendEl.style.display = "";
       if(trendEmpty) trendEmpty.hidden = true;
       const trendData = allPeriodos.map(p => {
@@ -2502,6 +2521,7 @@ function buildAnalytics(){
       try { window.renderTrendChart(trendEl, trendData); }
       catch(e){ console.warn("[analytics] trend chart falló:", e); }
     } else {
+      if(trendCard) trendCard.setAttribute("data-empty", "1");
       trendEl.style.display = "none";
       if(trendEmpty) trendEmpty.hidden = false;
     }
@@ -2530,12 +2550,15 @@ function buildAnalytics(){
       dayMap.set(iso, (dayMap.get(iso) || 0) + 1);
     }
     const heatData = Array.from(dayMap.entries()).map(([date, count]) => ({ date, count }));
+    const heatCard = document.getElementById("chart-card-heatmap");
     if(heatData.length && typeof window.renderTallerHeatmapChart === "function"){
+      if(heatCard) heatCard.removeAttribute("data-empty");
       heatEl.style.display = "";
       if(heatEmpty) heatEmpty.hidden = true;
       try { window.renderTallerHeatmapChart(heatEl, heatData); }
       catch(e){ console.warn("[analytics] heatmap falló:", e); }
     } else {
+      if(heatCard) heatCard.setAttribute("data-empty", "1");
       heatEl.style.display = "none";
       if(heatEmpty) heatEmpty.hidden = false;
     }
@@ -2554,12 +2577,15 @@ function buildAnalytics(){
       const risk = (u.risk === "Urgente" || u.risk === "Revisar" || u.risk === "Completar" || u.risk === "OK") ? u.risk : "OK";
       kmPoints.push({ km: kmA, kmNext: kmN, label: u.eco || u.plate || u.uid || "—", risk });
     }
+    const kmCard = document.getElementById("chart-card-km");
     if(kmPoints.length && typeof window.renderKmScatterChart === "function"){
+      if(kmCard) kmCard.removeAttribute("data-empty");
       kmEl.style.display = "";
       if(kmEmpty) kmEmpty.hidden = true;
       try { window.renderKmScatterChart(kmEl, kmPoints); }
       catch(e){ console.warn("[analytics] km scatter falló:", e); }
     } else {
+      if(kmCard) kmCard.setAttribute("data-empty", "1");
       kmEl.style.display = "none";
       if(kmEmpty) kmEmpty.hidden = false;
     }

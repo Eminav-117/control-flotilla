@@ -4032,17 +4032,69 @@ select {
 }
 .chart-empty {
   position: relative;
-  margin-top: -240px;
-  height: 240px;
+  margin-top: -260px;
+  height: 260px;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-  font-size: 11px;
+  padding: 16px 24px;
+  gap: 6px;
+  color: var(--s2);
+  pointer-events: auto;
+}
+.chart-empty[hidden] {
+  display: none;
+}
+.chart-card-wide .chart-empty {
+  margin-top: -320px;
+  height: 320px;
+}
+.chart-empty-icon {
+  width: 36px !important;
+  height: 36px !important;
   color: var(--s3);
-  padding: 0 20px;
+  margin-bottom: 4px;
+  opacity: 0.6;
+}
+.chart-empty-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--w2);
+  letter-spacing: 0.1px;
+}
+.chart-empty-msg {
+  font-size: 11.5px;
+  color: var(--s1);
+  max-width: 320px;
+  line-height: 1.45;
+}
+.chart-empty-msg code {
+  font-size: 10.5px;
+  font-family: var(--fm);
+  background: var(--bg3);
+  padding: 1px 5px;
+  border-radius: 3px;
+  color: var(--w2);
+}
+.chart-empty-hint {
+  font-size: 10.5px;
+  color: var(--s2);
+  max-width: 320px;
+  line-height: 1.4;
   font-style: italic;
-  pointer-events: none;
+}
+.chart-empty-hint b {
+  color: var(--ac);
+  font-style: normal;
+  font-weight: 600;
+}
+/* Auto-hide toda la chart-card cuando se marca con atributo data-empty="1".
+   Reduce ruido visual en panel sin forzar layout shift — solo cards con
+   data rellenan el grid. */
+.chart-card[data-empty="1"] {
+  display: none;
 }
 /* Responsive: apilar en una columna si viewport angosto */
 @media (max-width: 880px) {
