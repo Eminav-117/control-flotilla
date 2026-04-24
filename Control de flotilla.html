@@ -3648,40 +3648,38 @@ async function exportPDF(){
   const PW=210, PH=297, M=14, CW=PW-M*2;
   let y=M;
 
-  // Resuelve CSS var a hex — jsPDF no entiende var(...), necesita literal.
-  // Sample una vez al inicio por performance. Fallback "#000" si var vacía.
-  const _rootStyle = getComputedStyle(document.documentElement);
-  const rc = (v) => {
-    if(typeof v !== "string" || !v.startsWith("var(")) return v;
-    const m = v.match(/--[^),\s]+/);
-    if(!m) return v;
-    return (_rootStyle.getPropertyValue(m[0]).trim() || "#000");
-  };
-
+  // PDF paleta — hex literales Tremor opacos. jsPDF 4.x NO acepta CSS vars.
+  // PDF siempre light theme (printable). Tints son opaque hex Tremor *-200/*-50.
   const C={
-    R:rc("var(--R)"), A:rc("var(--A)"), G:rc("var(--G)"), B:rc("var(--B)"),
-    T:rc("var(--ac)"),
-    bg:"#FFFFFF", bg2:rc("var(--bg2)"), bg3:rc("var(--bg2)"),
-    ln:rc("var(--ln)"), s1:rc("var(--s2)"), s2:rc("var(--s2)"), s3:rc("var(--s3)"),
-    w1:rc("var(--w1)"), w2:rc("var(--w2)")
+    R:"#E11D48", A:"#D97706", G:"#059669", B:"#1D4ED8", O:"#EA580C",
+    T:"#2563EB", T2:"#1D4ED8",
+    bg:"#FFFFFF", bg2:"#EFF1F5", bg3:"#E8EAF0",
+    ln:"#E5E6EB", s1:"#475569", s2:"#64748B", s3:"#6B7280",
+    w1:"#0F172A", w2:"#1E293B",
+    // Tints (Tremor color-200/50 equivalents, opacos para jsPDF)
+    Rl:"#FECDD3", Rd:"#FFF1F2",
+    Al:"#FDE68A", Ad:"#FFFBEB",
+    Gl:"#A7F3D0", Gd:"#ECFDF5",
+    Bl:"#BFDBFE", Bd:"#EFF6FF",
+    Ol:"#FED7AA", Od:"#FFF7ED"
   };
   const riskColor=u.risk==="Urgente"?C.R:u.risk==="Revisar"?C.A:u.risk==="Completar"?C.B:C.G;
 
   // helper: add page if needed
   const chk=(need=10)=>{ if(y+need>PH-M){ doc.addPage(); y=M; drawPageHeader(); } };
   const line=(x1,y1,x2,y2,col=C.ln,w=0.3)=>{
-    doc.setDrawColor(rc(col)); doc.setLineWidth(w); doc.line(x1,y1,x2,y2);
+    doc.setDrawColor(col); doc.setLineWidth(w); doc.line(x1,y1,x2,y2);
   };
   const rect=(x,yy,w,h,fill,stroke)=>{
-    if(fill){doc.setFillColor(rc(fill));doc.rect(x,yy,w,h,"F");}
-    if(stroke){doc.setDrawColor(rc(stroke));doc.setLineWidth(0.3);doc.rect(x,yy,w,h,"S");}
+    if(fill){doc.setFillColor(fill);doc.rect(x,yy,w,h,"F");}
+    if(stroke){doc.setDrawColor(stroke);doc.setLineWidth(0.3);doc.rect(x,yy,w,h,"S");}
   };
   const rrect=(x,yy,w,h,r,fill,stroke)=>{
-    if(fill){doc.setFillColor(rc(fill));doc.roundedRect(x,yy,w,h,r,r,"F");}
-    if(stroke){doc.setDrawColor(rc(stroke));doc.setLineWidth(0.3);doc.roundedRect(x,yy,w,h,r,r,"S");}
+    if(fill){doc.setFillColor(fill);doc.roundedRect(x,yy,w,h,r,r,"F");}
+    if(stroke){doc.setDrawColor(stroke);doc.setLineWidth(0.3);doc.roundedRect(x,yy,w,h,r,r,"S");}
   };
   const txt=(t,x,yy,size=9,col=C.s2,align="left",bold=false)=>{
-    doc.setFontSize(size);doc.setTextColor(rc(col));
+    doc.setFontSize(size);doc.setTextColor(col);
     doc.setFont("helvetica",bold?"bold":"normal");
     doc.text(String(t),x,yy,{align});
   };
@@ -3700,8 +3698,8 @@ async function exportPDF(){
 
 
   // ── PORTADA ─────────────────────────────────────────────
-  const riskBg  =u.risk==="Urgente"?"var(--Rl)":u.risk==="Revisar"?"var(--Ad)":u.risk==="Completar"?"var(--Bd)":"var(--Gl)";
-  const riskBord=u.risk==="Urgente"?"var(--Rl)":u.risk==="Revisar"?"var(--A)":u.risk==="Completar"?"var(--B)":"var(--G)";
+  const riskBg  =u.risk==="Urgente"?C.Rl:u.risk==="Revisar"?C.Ad:u.risk==="Completar"?C.Bd:C.Gl;
+  const riskBord=u.risk==="Urgente"?C.Rl:u.risk==="Revisar"?C.A:u.risk==="Completar"?C.B:C.G;
   drawPageHeader(); y=24;
 
   // Tarjeta de identidad de la unidad
@@ -3759,7 +3757,7 @@ async function exportPDF(){
       y+=2;
     }
   } else {
-    rect(M,y,CW,10,"var(--Gl)");
+    rect(M,y,CW,10,C.Gl);
     txt("Sin hallazgos detectados",M+CW/2,y+6.5,9,C.G,"center");
     y+=14;
   }
@@ -3782,7 +3780,7 @@ async function exportPDF(){
     }
     if(u.minT!==null){
       const mc=u.minT<=3?C.R:u.minT<=5?C.A:C.G;
-      const mcBg=u.minT<=3?"var(--Rl)":u.minT<=5?"var(--Ad)":"var(--Gl)";
+      const mcBg=u.minT<=3?C.Rl:u.minT<=5?C.Ad:C.Gl;
       rect(M,y,CW,7,mcBg);
       txt(`Taco mínimo: ${u.minT}mm — ${u.minT<=3?"Reemplazo urgente":u.minT<=5?"Programar reemplazo":"Buen estado"}`,M+CW/2,y+4.5,8,mc,"center",true);
       y+=10;
@@ -3794,12 +3792,13 @@ async function exportPDF(){
   if(notes.length){
     chk(18); line(M,y,M+CW,y,C.bg3); y+=6;
     txt("NOTAS DE SEGUIMIENTO",M,y,7,C.s3,undefined,true); y+=5;
+    // Mapeo hex directo para PDF — NOTE_TYPES usa CSS vars (HTML), aquí hex.
+    const noteColorMap = { seguimiento: C.T, taller: C.O, alerta: C.R, info: C.s1 };
     for(const n of [...notes].reverse()){
       chk(14);
       const nt=NOTE_TYPES[n.type]||NOTE_TYPES.info;
       const d=new Date(n.ts).toLocaleDateString("es-MX",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"});
-      const nc=nt.color.replace("var(--B)","var(--ac)").replace("var(--O)","var(--O)")
-        .replace("var(--R)","var(--R)").replace("var(--s3)","var(--s1)");
+      const nc=noteColorMap[n.type] || C.s1;
       rect(M,y-3,CW,1,nc);
       txt(nt.label.toUpperCase(),M,y+3,6,nc,undefined,true);
       txt(d,PW-M,y+3,6,C.s3,"right");
@@ -3976,37 +3975,29 @@ async function exportFleetPDF(){
   const PW=210, PH=297, M=14, CW=PW-M*2;
   let y=M;
 
-  // Resuelve CSS var a hex — jsPDF necesita literal.
-  const _rootStyle = getComputedStyle(document.documentElement);
-  const rc = (v) => {
-    if(typeof v !== "string" || !v.startsWith("var(")) return v;
-    const m = v.match(/--[^),\s]+/);
-    if(!m) return v;
-    return (_rootStyle.getPropertyValue(m[0]).trim() || "#000");
-  };
-
+  // PDF paleta — hex literales Tremor (always light-theme, printable).
   const C={
-    R:rc("var(--R)"), A:rc("var(--A)"), G:rc("var(--G)"), B:rc("var(--B)"),
-    T:rc("var(--ac)"),
-    bg:"#FFFFFF", bg2:rc("var(--bg2)"), bg3:rc("var(--bg2)"),
-    ln:rc("var(--ln)"), s1:rc("var(--s2)"), s2:rc("var(--s2)"), s3:rc("var(--s3)"),
-    w1:rc("var(--w1)"), w2:rc("var(--w2)")
+    R:"#E11D48", A:"#D97706", G:"#059669", B:"#1D4ED8",
+    T:"#2563EB", T2:"#1D4ED8",
+    bg:"#FFFFFF", bg2:"#EFF1F5", bg3:"#E8EAF0",
+    ln:"#E5E6EB", s1:"#475569", s2:"#64748B", s3:"#6B7280",
+    w1:"#0F172A", w2:"#1E293B"
   };
 
   const chk=(need=10)=>{ if(y+need>PH-14){ doc.addPage(); y=M; drawPageHeader(); } };
   const line=(x1,y1,x2,y2,col=C.ln,w=0.3)=>{
-    doc.setDrawColor(rc(col)); doc.setLineWidth(w); doc.line(x1,y1,x2,y2);
+    doc.setDrawColor(col); doc.setLineWidth(w); doc.line(x1,y1,x2,y2);
   };
   const rect=(x,yy,w,h,fill,stroke)=>{
-    if(fill){doc.setFillColor(rc(fill));doc.rect(x,yy,w,h,"F");}
-    if(stroke){doc.setDrawColor(rc(stroke));doc.setLineWidth(0.3);doc.rect(x,yy,w,h,"S");}
+    if(fill){doc.setFillColor(fill);doc.rect(x,yy,w,h,"F");}
+    if(stroke){doc.setDrawColor(stroke);doc.setLineWidth(0.3);doc.rect(x,yy,w,h,"S");}
   };
   const rrect=(x,yy,w,h,r,fill,stroke)=>{
-    if(fill){doc.setFillColor(rc(fill));doc.roundedRect(x,yy,w,h,r,r,"F");}
-    if(stroke){doc.setDrawColor(rc(stroke));doc.setLineWidth(0.3);doc.roundedRect(x,yy,w,h,r,r,"S");}
+    if(fill){doc.setFillColor(fill);doc.roundedRect(x,yy,w,h,r,r,"F");}
+    if(stroke){doc.setDrawColor(stroke);doc.setLineWidth(0.3);doc.roundedRect(x,yy,w,h,r,r,"S");}
   };
   const txt=(t,x,yy,size=9,col=C.s2,align="left",bold=false)=>{
-    doc.setFontSize(size); doc.setTextColor(rc(col));
+    doc.setFontSize(size); doc.setTextColor(col);
     doc.setFont("helvetica",bold?"bold":"normal");
     doc.text(String(t==null?"—":t),x,yy,{align});
   };
@@ -4037,11 +4028,11 @@ async function exportFleetPDF(){
   // ══════════════════════════════════════════════════════════
   // Franja superior de color sólido
   rect(0,0,PW,52,C.T);
-  doc.setFillColor(rc("var(--ac2)")); doc.rect(0,44,PW,8,"F");
+  doc.setFillColor(C.T2); doc.rect(0,44,PW,8,"F");
 
   txt("GPA FLEET COMMAND",PW/2,22,22,C.bg,"center",true);
-  txt("REPORTE EJECUTIVO DE FLOTILLA",PW/2,34,11,"var(--acl)","center",true);
-  txt(dateStr.toUpperCase(),PW/2,43,7.5,"var(--s2)","center");
+  txt("REPORTE EJECUTIVO DE FLOTILLA",PW/2,34,11,C.bg,"center",true);
+  txt(dateStr.toUpperCase(),PW/2,43,7.5,C.s2,"center");
 
   // ── KPI cards en 2 filas de 3 ────────────────────────────
   y=62;
@@ -4052,7 +4043,7 @@ async function exportFleetPDF(){
     {label:"A REVISAR",      val:nR,    color:C.A,       sub:`${pct(nR)}% de la flota`},
     {label:"COMPLETAR",      val:nC,    color:C.B,       sub:`${pct(nC)}% con pendiente`},
     {label:"OPERATIVAS",     val:nOK,   color:C.G,       sub:`${pct(nOK)}% de la flota`},
-    {label:"LLANTAS CRIT.",  val:nCT,   color:"var(--O)", sub:`<= ${TCRIT}mm de taco`},
+    {label:"LLANTAS CRIT.",  val:nCT,   color:C.O, sub:`<= ${TCRIT}mm de taco`},
   ];
   for(let i=0;i<6;i++){
     const kd=kdata[i];
@@ -4119,7 +4110,7 @@ async function exportFleetPDF(){
   sorted.forEach((u,idx)=>{
     chk(7);
     const rc=u.risk==="Urgente"?C.R:u.risk==="Revisar"?C.A:u.risk==="Completar"?C.B:C.G;
-    const bg=u.risk==="Urgente"?"var(--Rl)":u.risk==="Revisar"?"var(--Ad)":u.risk==="Completar"?"var(--Bd)":idx%2===0?C.bg2:C.bg;
+    const bg=u.risk==="Urgente"?C.Rl:u.risk==="Revisar"?C.Ad:u.risk==="Completar"?C.Bd:idx%2===0?C.bg2:C.bg;
     rect(M,y,CW,7,bg);
     const fu=u.F.filter(f=>f.lv==="Urgente").length;
     const fr=u.F.filter(f=>f.lv==="Revisar").length;
@@ -4152,7 +4143,7 @@ async function exportFleetPDF(){
   const urgentes=sorted.filter(u=>u.risk==="Urgente");
   if(urgentes.length){
     doc.addPage(); drawPageHeader();
-    rrect(M,y,CW,11,2,"var(--Rl)","var(--Rl)");
+    rrect(M,y,CW,11,2,C.Rl,C.Rl);
     rect(M,y,3,11,C.R);
     txt("UNIDADES URGENTES",M+7,y+4.5,10,C.R,"left",true);
     txt(`${urgentes.length} unidad${urgentes.length>1?"es requieren":"requiere"} atencion inmediata`,M+7,y+9.5,7,C.R);
@@ -4161,7 +4152,7 @@ async function exportFleetPDF(){
     for(const u of urgentes){
       chk(28);
       // Tarjeta de cabecera de unidad
-      rrect(M,y,CW,11,2,"var(--Rd)","var(--R)");
+      rrect(M,y,CW,11,2,C.Rd,C.R);
       rect(M,y,3.5,11,C.R);
       txt(u.plate||u.eco||"—",M+7,y+7,11,C.w1,"left",true);
       txt(u.brand||"—",M+30,y+4,7,C.s1);
@@ -4197,7 +4188,7 @@ async function exportFleetPDF(){
       // Llantas críticas
       if(u.minT!=null&&u.minT<=TCRIT){
         chk(7);
-        rrect(M+3,y,CW-3,6.5,1.5,"var(--Rd)","var(--Rl)");
+        rrect(M+3,y,CW-3,6.5,1.5,C.Rd,C.Rl);
         txt(`Llanta mínima: ${u.minT}mm — REEMPLAZO URGENTE`,M+6,y+4.5,6.5,C.R,"left",true);
         y+=9;
       }
@@ -4212,7 +4203,7 @@ async function exportFleetPDF(){
   const revisares=sorted.filter(u=>u.risk==="Revisar");
   if(revisares.length){
     doc.addPage(); drawPageHeader();
-    rrect(M,y,CW,11,2,"var(--Ad)","var(--A)");
+    rrect(M,y,CW,11,2,C.Ad,C.A);
     rect(M,y,3,11,C.A);
     txt("UNIDADES A REVISAR",M+7,y+4.5,10,C.A,"left",true);
     txt(`${revisares.length} unidad${revisares.length>1?"es requieren":"requiere"} seguimiento programado`,M+7,y+9.5,7,C.A);
@@ -4222,7 +4213,7 @@ async function exportFleetPDF(){
     const RC=[8,24,40,34,22,18,18,18];
     const RX=[M]; for(let i=0;i<RC.length-1;i++) RX.push(RX[RX.length-1]+RC[i]);
     const RH=["#","ECO / PLACA","MARCA","SUCURSAL","U · R · C","LLANTA","KM","FECHA"];
-    rect(M,y,CW,7,"var(--Al)");
+    rect(M,y,CW,7,C.Al);
     RH.forEach((h,i)=>{ txt(h,RX[i]+1,y+5,5.5,C.A,"left",true); });
     y+=7;
 
@@ -4281,7 +4272,7 @@ async function exportFleetPDF(){
   if(completar.length){
     chk(30);
     line(M,y,M+CW,y,C.ln); y+=8;
-    rrect(M,y,CW,11,2,"var(--Bd)","var(--B)");
+    rrect(M,y,CW,11,2,C.Bd,C.B);
     rect(M,y,3,11,C.B);
     txt("UNIDADES CON DOCUMENTACIÓN PENDIENTE",M+7,y+4.5,9,C.B,"left",true);
     txt(`${completar.length} unidades`,PW-M,y+7,7,C.B,"right");
