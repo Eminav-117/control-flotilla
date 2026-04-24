@@ -803,22 +803,39 @@ g.inflateBytes=async function(src){
     const timer=setTimeout(()=>{close();try{onCommit&&onCommit();}catch(e){console.error("[notifyUndo commit]",e);}},ms);
     btn.onclick=()=>{clearTimeout(timer);close();try{onUndo&&onUndo();}catch(e){console.error("[notifyUndo undo]",e);}};
   };
+  // Sanitiza errores tecnicos para no exponer stack / paths / impl details al user.
+  // Regla security #6: generic messages. Técnico → console.error; user → mensaje limpio.
+  window._sanitizeErrorMsg=function(raw){
+    const msg=String(raw==null?"":raw);
+    // Detectar fingerprints de stack trace / rutas internas / URLs
+    if(/\b(at\s+\w+|\/node_modules\/|file:\/\/\/|https?:\/\/[^\s]+|\.\w+:\d+:\d+)/.test(msg)){
+      return "Error inesperado. Intenta de nuevo o recarga la página.";
+    }
+    // Truncate msgs muy largos (posible leakage no detectado)
+    return msg.length>200?msg.slice(0,200)+"…":msg;
+  };
   window.runSafe=async function(label,fn){
     try{return await fn();}
     catch(err){
       console.error(`[${label}]`,err);
-      const msg=(err&&err.message)?err.message:String(err);
+      const msg=window._sanitizeErrorMsg((err&&err.message)?err.message:err);
       window.notify(`${label}: ${msg}`,"error",6000);
       try{const l=document.getElementById("ldr");if(l)l.style.display="none";}catch(_){}
       return null;
     }
   };
   window.addEventListener("error",e=>{
-    if(e&&e.error){window.notify(`Error: ${e.message||e.error}`,"error",6000);}
+    if(e&&e.error){
+      console.error("[window.error]",e.error);
+      const msg=window._sanitizeErrorMsg(e.message||e.error);
+      window.notify(`Error: ${msg}`,"error",6000);
+    }
   });
   window.addEventListener("unhandledrejection",e=>{
-    const r=e&&e.reason;const m=(r&&r.message)?r.message:String(r||"promise rechazada");
-    window.notify(`Error: ${m}`,"error",6000);
+    const r=e&&e.reason;
+    console.error("[unhandledrejection]",r);
+    const raw=(r&&r.message)?r.message:(r||"promise rechazada");
+    window.notify(`Error: ${window._sanitizeErrorMsg(raw)}`,"error",6000);
   });
   // Aviso si alguno de los CDNs falló al cargar (ver scripts del head con onerror)
   window.addEventListener("DOMContentLoaded",()=>{
