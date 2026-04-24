@@ -118,8 +118,8 @@ test.describe("Workflow — lógica real usuario", () => {
     await page.fill("#tf-tecnico", "Test Técnico E2E");
     await page.fill("#tf-comentario", "Test falla generada por e2e workflow spec");
 
-    // Guardar — selector específico modal taller (evita match con "Guardar período")
-    await page.click("#taller-modal .tl-save");
+    // Guardar — .tl-save ahora único (.pm-save para periodo-modal, post-fix)
+    await page.click(".tl-save");
     await page.waitForTimeout(1500); // IDB persist async
 
     // Verificar modal cerró

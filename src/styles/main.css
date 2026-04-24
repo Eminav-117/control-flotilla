@@ -3274,7 +3274,8 @@ select {
   flex-shrink: 0;
   flex-wrap: wrap;
 }
-.tl-save {
+.tl-save,
+.pm-save {
   padding: 8px 18px;
   background: var(--ac);
   color: #fff;
@@ -3285,7 +3286,8 @@ select {
   cursor: pointer;
   transition: background 0.12s;
 }
-.tl-save:hover {
+.tl-save:hover,
+.pm-save:hover {
   background: var(--ac2);
 }
 .tl-cancel {
