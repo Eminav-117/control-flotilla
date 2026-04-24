@@ -25,11 +25,15 @@ FROM nginx:1.27.3-alpine AS runtime
 # Copiar configuración personalizada de Nginx (server block)
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Worker tuning: nginx:alpine default = worker_processes 1 + 1024 connections.
-# `auto` usa 1 worker por CPU — uploads concurrentes no serializan.
-# 2048 connections por worker = ~4k concurrentes por 2-core (más que suficiente intranet).
+# Worker tuning + rate limit zones (scope http{}, no server{}).
+# `auto` = 1 worker/CPU. 2048 connections = ~4k concurrent/2-core (intranet sufficient).
+# Rate limit zones:
+#   general: 30 req/s por IP (navegación normal)
+#   upload:  3 req/s por IP (protege endpoints grandes)
+#   healthz: 60 req/min por IP (evita abuse /healthz polling)
 RUN sed -i 's/^worker_processes.*$/worker_processes auto;/' /etc/nginx/nginx.conf && \
-    sed -i 's/worker_connections  *1024/worker_connections 2048/' /etc/nginx/nginx.conf
+    sed -i 's/worker_connections  *1024/worker_connections 2048/' /etc/nginx/nginx.conf && \
+    sed -i '/http {/a\    limit_req_zone $binary_remote_addr zone=general:10m rate=30r/s;\n    limit_req_zone $binary_remote_addr zone=upload:10m rate=3r/s;\n    limit_req_zone $binary_remote_addr zone=healthz:1m rate=60r/m;' /etc/nginx/nginx.conf
 
 # Copiar los archivos estáticos desde la etapa de build
 COPY --from=build /app/dist /usr/share/nginx/html

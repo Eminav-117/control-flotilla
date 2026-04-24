@@ -3140,23 +3140,70 @@ async function loadManualPhotos(){
   }catch(e){console.warn("[DB] loadManualPhotos:",e);}
 }
 
+// Valida magic bytes de formato imagen soportado. Browser puede mentir con
+// Content-Type; confiar solo en bytes reales (defense-in-depth).
+// JPEG: FF D8 FF | PNG: 89 50 4E 47 | GIF: 47 49 46 38 | WebP: 52 49 46 46 ... 57 45 42 50
+function _isSupportedImageBuf(bytes){
+  if(!bytes || bytes.length < 12) return false;
+  if(bytes[0]===0xFF && bytes[1]===0xD8 && bytes[2]===0xFF) return true; // JPEG
+  if(bytes[0]===0x89 && bytes[1]===0x50 && bytes[2]===0x4E && bytes[3]===0x47) return true; // PNG
+  if(bytes[0]===0x47 && bytes[1]===0x49 && bytes[2]===0x46 && bytes[3]===0x38) return true; // GIF
+  if(bytes[0]===0x52 && bytes[1]===0x49 && bytes[2]===0x46 && bytes[3]===0x46 &&
+     bytes[8]===0x57 && bytes[9]===0x45 && bytes[10]===0x42 && bytes[11]===0x50) return true; // WebP
+  return false;
+}
+
+const MANUAL_PHOTO_MAX_BYTES = 10 * 1024 * 1024; // 10MB por foto
+const MANUAL_PHOTO_MAX_FILES = 20; // Por operación upload
+
 async function addManualPhoto(uid){
   const input=document.createElement("input");
-  input.type="file";input.accept="image/*";input.multiple=true;
+  input.type="file";input.accept="image/jpeg,image/png,image/gif,image/webp";input.multiple=true;
   input.addEventListener("change", async () => {
     const files=Array.from(input.files);
     if(!files.length)return;
+
+    // Validación cantidad: evita abuse saturando IDB con cientos de fotos
+    if(files.length > MANUAL_PHOTO_MAX_FILES){
+      window.notify?.(`Máximo ${MANUAL_PHOTO_MAX_FILES} fotos por operación. Seleccionaste ${files.length}.`,"warn",6000);
+      return;
+    }
+
     const db=await openDB();
     if(!manualPhotosDB[uid])manualPhotosDB[uid]=[];
+    let accepted=0, rejectedSize=0, rejectedType=0;
+
     for(const file of files){
+      // Validación tamaño ANTES de leer (evita OOM con archivos gigantes)
+      if(file.size > MANUAL_PHOTO_MAX_BYTES){
+        rejectedSize++;
+        continue;
+      }
+
       const buf=await file.arrayBuffer();
+      const bytes=new Uint8Array(buf);
+
+      // Magic byte validation — browser Content-Type puede mentir
+      if(!_isSupportedImageBuf(bytes)){
+        rejectedType++;
+        continue;
+      }
+
       const id="manual_"+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
-      const entry={uid,label:file.name.replace(/\.[^.]+$/,""),data:new Uint8Array(buf)};
+      const entry={uid,label:file.name.replace(/\.[^.]+$/,""),data:bytes};
       const tx=db.transaction("images","readwrite");
       tx.onerror=()=>{console.error("[addManualPhoto] tx error:",tx.error);window.notify?.("Error guardando foto manual","error");};
       tx.onabort=()=>{console.error("[addManualPhoto] tx abort:",tx.error);window.notify?.("Guardado de foto abortado","error");};
       tx.objectStore("images").put(entry,id);
-      manualPhotosDB[uid].push({id,fname:id,label:entry.label,data:entry.data});
+      manualPhotosDB[uid].push({id,fname:id,label:entry.label,data:bytes});
+      accepted++;
+    }
+
+    if(rejectedSize || rejectedType){
+      const parts=[];
+      if(rejectedSize) parts.push(`${rejectedSize} excede 10MB`);
+      if(rejectedType) parts.push(`${rejectedType} formato inválido (solo JPEG/PNG/GIF/WebP)`);
+      window.notify?.(`${accepted} aceptadas, ${parts.join(", ")}.`,"warn",7000);
     }
     renderDet();
   });
