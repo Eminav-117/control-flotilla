@@ -1,0 +1,20 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - npm ci --prefer-offline --no-audit
+    build:
+      commands:
+        - npm run build
+        # Amplify default root es index.html — duplicamos el HTML principal
+        # para que la URL raíz cargue la app sin redirect adicional.
+        - cp "dist/Control de flotilla.html" dist/index.html
+  artifacts:
+    baseDirectory: dist
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/**/*
+      - .npm/**/*

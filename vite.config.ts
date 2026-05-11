@@ -1,7 +1,10 @@
 import { defineConfig } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
 import { existsSync } from "node:fs";
-import { resolve } from "node:path";
+import { resolve, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 // Valida que los iconos referenciados en el manifest PWA existan en public/.
 // Si falta alguno, falla el build con mensaje claro en lugar de producir un manifest roto
@@ -30,6 +33,14 @@ export default defineConfig(({ mode }) => ({
     outDir: "dist",
     target: "es2022",
     sourcemap: "hidden",
+    rollupOptions: {
+      // Doble entry: index.html (redirect-stub) + Control de flotilla.html (app legacy).
+      // Sin esto, Vite solo bundlea index.html y la app real queda fuera del dist.
+      input: {
+        index: resolve(__dirname, "index.html"),
+        app: resolve(__dirname, "Control de flotilla.html"),
+      },
+    },
     // manualChunks removido: xlsx/jspdf se sirven como ./vendor/*.js standalone,
     // no se importan en módulos TS actuales. Vite emitía chunks vacíos (0 kB).
     // Si algún módulo src/ empieza a importar xlsx/jspdf, reintroduce chunks aquí
