@@ -2337,7 +2337,9 @@ function buildKPIs(){
   // OK = sin pending. Atender un Urg quita unidad de bucket Urg sin "moverla" a otro.
   // Vars *Donut son EXCLUSIVAS (suman a t) — el donut necesita partir el círculo.
   let u=0,rv=0,cpl=0,comp=0,ok=0,ct=0,enTaller=0,nSvcVencido=0,nSvcProximo=0,withObs=0;
-  let uDonut=0,rvDonut=0,okDonut=0;
+  // Donut binario: operativa = NO en taller. Findings pendientes NO sacan a la
+  // unidad de operativa — la unidad sigue circulando hasta que la suben a taller.
+  let operativaDonut=0,tallerDonut=0;
   for(let i=0;i<t;i++){
     const x=units[i];
     const dm=checklistDB[x.uid]||{};
@@ -2351,13 +2353,12 @@ function buildKPIs(){
       if(hasR) rv++;
       if(hasC) cpl++;
     }
-    // Exclusivo para donut
-    if(hasU) uDonut++;
-    else if(hasR) rvDonut++;
-    else okDonut++;
     if(hasC) comp++;
     if(x.minT!==null&&x.minT<=TCRIT) ct++;
-    if(isUnitEnTaller(x)) enTaller++;
+    const enTallerNow=isUnitEnTaller(x);
+    if(enTallerNow) enTaller++;
+    // Donut binario: operativa real = no está en taller.
+    if(enTallerNow) tallerDonut++; else operativaDonut++;
     if(x.obs) withObs++;
     const sd=parseSvcDate(x.nextSvc);
     if(sd){
@@ -2393,33 +2394,30 @@ function buildKPIs(){
   if(btnFleet) btnFleet.style.display=t?"flex":"none";
   const btnResumen=document.getElementById("btn-resumen");
   if(btnResumen) btnResumen.style.display=t?"inline-flex":"none";
-  // donut — 3 segmentos exclusivos: Urgente / Revisar / Operativa.
-  // Operativa = unidades sin pending Urg ni Rev (incluye Completar pending o todo OK).
-  // Chips son overlap (Modelo C-mod) — donut NO, usa vars *Donut.
-  // Render via ECharts (src/dashboard/charts.ts), leyenda custom abajo.
+  // Donut binario: Operativa (no taller) vs En taller.
+  // Refleja capacidad operativa real, no estado de findings.
+  // Los chips arriba (fc0/fc1/fc4) siguen mostrando counts de findings por nivel.
   const donutEl = document.getElementById("kpi-donut");
   if (donutEl && typeof window.renderDonutChart === "function") {
     const cs = getComputedStyle(document.documentElement);
     const cR = cs.getPropertyValue("--R").trim() || "var(--R)";
-    const cA = cs.getPropertyValue("--A").trim() || "var(--A)";
     const cG = cs.getPropertyValue("--G").trim() || "var(--G)";
     try {
       window.renderDonutChart(donutEl, [
-        { key: "Urgente", label: "Urgente", value: uDonut, color: cR },
-        { key: "Revisar", label: "Revisar", value: rvDonut, color: cA },
-        { key: "OK",      label: "Operativa", value: okDonut, color: cG },
+        { key: "Operativa", label: "Operativa", value: operativaDonut, color: cG },
+        { key: "Taller",    label: "En taller", value: tallerDonut,    color: cR },
       ], {
-        onSegmentClick: (key) => { if (typeof setF === "function") setF(key); },
+        onSegmentClick: (key) => {
+          if (typeof setF === "function") setF(key === "Taller" ? "taller" : "all");
+        },
       });
     } catch (e) { console.warn("[buildKPIs] donut ECharts falló:", e); }
   }
-  // Leyenda custom al lado del donut (hover dim + numbers actualizados).
-  // ECharts maneja el donut pero la leyenda sigue siendo nuestra — le da
-  // control sobre el hover cross-highlighting y se integra con CSS dark mode.
-  const legRows=[["u","var(--R)","Urgente",uDonut],["rv","var(--A)","Revisar",rvDonut],["ok","var(--G)","Operativa",okDonut]];
+  // Leyenda custom al lado del donut.
+  const legRows=[["op","var(--G)","Operativa",operativaDonut],["tlr","var(--R)","En taller",tallerDonut]];
   const dleg=document.getElementById("dleg");
   if(dleg){
-    dleg.title="Urgente · Revisar · Operativa (OK + Completar). Completar es pendiente admin, no riesgo.";
+    dleg.title="Operativa = unidad no está en taller. Findings pendientes (chips arriba) NO la sacan de operativa — sigue circulando.";
     dleg.innerHTML=
       legRows.map(([k,c,l,n])=>`<div class="dleg-i" data-k="${k}"><span class="dleg-lbl"><span class="dleg-sq" style="background:${c}"></span>${l}</span><span class="dleg-num" style="color:${c}">${n}</span></div>`).join("");
   }

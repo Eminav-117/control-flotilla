@@ -55,8 +55,17 @@ describe("calcEstatusSemanal", () => {
     expect(calcEstatusSemanal("OK", "Urgente", "OK", "OK")).toBe("Urgente");
   });
 
-  it("carrocería/llanta no afectan el estatus global", () => {
-    expect(calcEstatusSemanal("OK", "OK", "Urgente", "Urgente")).toBe("OK");
+  it("carrocería Urgente (volcadura) → Urgente", () => {
+    expect(calcEstatusSemanal("OK", "OK", "Urgente", "OK")).toBe("Urgente");
+  });
+
+  it("llanta Urgente → Urgente", () => {
+    expect(calcEstatusSemanal("OK", "OK", "OK", "Urgente")).toBe("Urgente");
+  });
+
+  it("carrocería o llanta Revisar → Revisar", () => {
+    expect(calcEstatusSemanal("OK", "OK", "Revisar", "OK")).toBe("Revisar");
+    expect(calcEstatusSemanal("OK", "OK", "OK", "Revisar")).toBe("Revisar");
   });
 
   it("Revisar en vitales escala a Revisar", () => {

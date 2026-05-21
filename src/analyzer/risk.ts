@@ -173,21 +173,18 @@ export function normTireRisk(val: unknown): RiskLevel {
 /**
  * Estatus semanal global de una unidad.
  *
- * Solo `aceite` y `radiador` escalan el estatus — son los vitales del motor.
- * `carroceria` y `llanta` se mantienen en la firma para compatibilidad con el
- * legado (permite llamadas `calcEstatusSemanal(a, r, c, l)` sin refactor), pero
- * se ignoran intencionalmente. Si un día cambia la regla de negocio, escalarlos
- * aquí sin romper callers.
+ * Los 4 vitales escalan: aceite + radiador + carrocería + llanta.
+ * Carrocería Urgente capta volcaduras / daño estructural (normBodyRisk).
+ * Llanta Revisar capta ponchada / dañada / faltante sin TACO numérico (normTireRisk).
  */
 export function calcEstatusSemanal(
   aceiteRisk: RiskLevel | undefined,
   radiadorRisk: RiskLevel | undefined,
-  _carroceriaRisk?: RiskLevel,
-  _llantaRisk?: RiskLevel,
+  carroceriaRisk?: RiskLevel,
+  llantaRisk?: RiskLevel,
 ): RiskLevel {
-  void _carroceriaRisk;
-  void _llantaRisk;
-  if (aceiteRisk === "Urgente" || radiadorRisk === "Urgente") return "Urgente";
-  if (aceiteRisk === "Revisar" || radiadorRisk === "Revisar") return "Revisar";
+  const risks = [aceiteRisk, radiadorRisk, carroceriaRisk, llantaRisk];
+  if (risks.includes("Urgente")) return "Urgente";
+  if (risks.includes("Revisar")) return "Revisar";
   return "OK";
 }

@@ -81,7 +81,8 @@ export function analyzeRow(row: ExcelRow): AnalyzeResult {
   }
 
   // Tarjeta circulación vencida ya capturada por isBinFail (incluye "vencid").
-  for (const c of ["Nivel de aceite de motor max", "Nivel de liquido de frenos max"]) {
+  // Frenos bajo = Urgente (seguridad crítica). Aceite motor bajo = Revisar (no inmediato).
+  for (const c of ["Nivel de liquido de frenos max"]) {
     if (
       String(row[c] || "")
         .toLowerCase()
@@ -92,7 +93,11 @@ export function analyzeRow(row: ExcelRow): AnalyzeResult {
     }
   }
 
-  for (const c of ["Nivel de liquido de radiador max", "Nivel de aceite de direccion max"]) {
+  for (const c of [
+    "Nivel de aceite de motor max",
+    "Nivel de liquido de radiador max",
+    "Nivel de aceite de direccion max",
+  ]) {
     if (
       String(row[c] || "")
         .toLowerCase()

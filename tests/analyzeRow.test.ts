@@ -70,9 +70,9 @@ describe("analyzeRow", () => {
     expect(r.max).toBe("Completar");
   });
 
-  it("BIN: 'Con Raspaduras/Golpes' → Revisar (carrocería dañada)", () => {
+  it("BIN: 'Con Raspaduras/Golpes' → Completar (cosmético, no descalifica operativa)", () => {
     const r = analyzeRow({ "Carroceria con golpes o raspaduras": "Con Raspaduras/Golpes" });
-    expect(r.max).toBe("Revisar");
+    expect(r.max).toBe("Completar");
     expect(r.F.some((f) => f.text.includes("Carrocería con daños"))).toBe(true);
   });
 
@@ -160,8 +160,13 @@ describe("analyzeRow", () => {
     expect(r.F.some((f) => f.text === "Espejo retrovisor en buenas condiciones")).toBe(false);
   });
 
-  it("marca Urgente cuando nivel de aceite está bajo", () => {
+  it("marca Revisar cuando nivel de aceite de motor está bajo", () => {
     const r = analyzeRow({ "Nivel de aceite de motor max": "Nivel bajo" });
+    expect(r.max).toBe("Revisar");
+  });
+
+  it("marca Urgente cuando nivel de líquido de frenos está bajo", () => {
+    const r = analyzeRow({ "Nivel de liquido de frenos max": "Nivel bajo" });
     expect(r.max).toBe("Urgente");
   });
 
@@ -173,6 +178,35 @@ describe("analyzeRow", () => {
   it("BIN: luces 'No' produce Urgente", () => {
     const r = analyzeRow({ "Luces y cuartos delanteros funcionando": "No" });
     expect(r.max).toBe("Urgente");
+  });
+
+  it("BIN cosméticos reclasificados → Completar (no descalifican operativa)", () => {
+    const cosmetic = [
+      "Espejo retrovisor en buenas condiciones",
+      "Molduras completas y en buen estado",
+      "Asientos en buen estado",
+      "Tapetes completos",
+      "Tacometro en buenas condiciones",
+      "Luces interiores funcionando",
+    ];
+    for (const item of cosmetic) {
+      const r = analyzeRow({ [item]: "No" });
+      expect(r.max, `${item} debería ser Completar`).toBe("Completar");
+    }
+  });
+
+  it("BIN seguridad real sigue Revisar", () => {
+    const safety = [
+      "Espejos laterales en buen estado",
+      "Cristales en buenas condiciones",
+      "Bocina del claxon funcionando",
+      "Limpia parabrisas funcionando correctamente",
+      "Tapon de la gasolina",
+    ];
+    for (const item of safety) {
+      const r = analyzeRow({ [item]: "No" });
+      expect(r.max, `${item} debería ser Revisar`).toBe("Revisar");
+    }
   });
 
   it("maneja fila vacía sin reventar", () => {

@@ -37,17 +37,29 @@ describe("effRisk", () => {
   it("ambos OK → OK", () => {
     expect(effRisk(mkE({ aceiteRisk: "OK", radiadorRisk: "OK" }))).toBe("OK");
   });
-  it("carroceria/llanta se ignoran", () => {
+  it("carrocería Urgente (volcadura) escala → Urgente", () => {
     expect(
       effRisk(
         mkE({
           aceiteRisk: "OK",
           radiadorRisk: "OK",
           carroceriaRisk: "Urgente",
+          llantaRisk: "OK",
+        }),
+      ),
+    ).toBe("Urgente");
+  });
+  it("llanta Revisar escala → Revisar", () => {
+    expect(
+      effRisk(
+        mkE({
+          aceiteRisk: "OK",
+          radiadorRisk: "OK",
+          carroceriaRisk: "OK",
           llantaRisk: "Revisar",
         }),
       ),
-    ).toBe("OK");
+    ).toBe("Revisar");
   });
   it("undefined → OK", () => expect(effRisk(undefined)).toBe("OK"));
 });

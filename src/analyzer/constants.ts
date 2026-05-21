@@ -7,7 +7,7 @@ export const TC: Record<string, string> = {
   "Piloto Trasera Int.": "Nivel TACO de llanta piloto trasera INTERNA",
   "Copiloto Trasera": "Nivel TACO de llanta copiloto trasera",
   "Copiloto Trasera Int.": "Nivel TACO de llanta copiloto trasera INTERNA",
-  "Refacción": "Nivel TACO de llanta REFACCION",
+  Refacción: "Nivel TACO de llanta REFACCION",
 };
 
 export const TCRIT = 3.99;
@@ -16,18 +16,20 @@ export const TWARN = 6.99;
 export const BIN: Record<string, RiskLevel> = {
   "Luces y cuartos delanteros funcionando": "Urgente",
   "Cinturones de seguridad funcionando (todos)": "Urgente",
-  "Carroceria con golpes o raspaduras": "Revisar",
+  // Cosméticos / no afectan operación → Completar (no descalifican unidad).
+  "Carroceria con golpes o raspaduras": "Completar",
+  "Molduras completas y en buen estado": "Completar",
+  "Tacometro en buenas condiciones": "Completar",
+  "Espejo retrovisor en buenas condiciones": "Completar",
+  "Luces interiores funcionando": "Completar",
+  "Asientos en buen estado": "Completar",
+  "Tapetes completos": "Completar",
+  // Mantienen Revisar — afectan operación/seguridad real.
   "Espejos laterales en buen estado": "Revisar",
   "Cristales en buenas condiciones": "Revisar",
-  "Molduras completas y en buen estado": "Revisar",
   "Tapon de la gasolina": "Revisar",
   "Bocina del claxon funcionando": "Revisar",
   "Limpia parabrisas funcionando correctamente": "Revisar",
-  "Tacometro en buenas condiciones": "Revisar",
-  "Espejo retrovisor en buenas condiciones": "Revisar",
-  "Luces interiores funcionando": "Revisar",
-  "Asientos en buen estado": "Revisar",
-  "Tapetes completos": "Revisar",
   "Gato adecuado para el vehiculo y su palanca": "Completar",
   "Llave de cruz o palanca acorde a los birlos de las llantas": "Completar",
   "Triangulo de seguridad": "Completar",
@@ -68,7 +70,8 @@ export const BIN_LABELS: Record<string, string> = {
   "Tarjeta de circulacion vigente": "Tarjeta de circulación vencida o faltante",
   "Poliza de seguro vigente": "Póliza de seguro vencida o faltante",
   "Calcomonia de refrendo vehicular": "Sin calcomanía de refrendo",
-  "Tarjeta/calcamonia de verificacion ambiental vigente": "Verificación ambiental vencida o faltante",
+  "Tarjeta/calcamonia de verificacion ambiental vigente":
+    "Verificación ambiental vencida o faltante",
   "Calcamonia de ultimo servicio (en parabrisas)": "Sin calcomanía de último servicio",
 };
 
