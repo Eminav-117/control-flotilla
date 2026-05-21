@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <!-- CSP segunda línea de defensa (la primaria está en nginx). Cubre file:// y dev.
      Nota: frame-ancestors omitido aquí (browsers lo ignoran en meta — está en header nginx). -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-spoNzrFYGIL2O8R7ecquXngwmbxgYk7nmX1xlwYjExU=' 'sha256-Z7Mjh1RPn3a8kg8hBt3qldUGzKcjKTtyzXtc2X70hWc=' 'sha256-uyyxlbeXQNSZRUaWKeF8PEKDyrK9RlIbGSJBr24t62w=' 'sha256-/PDn/KGHddPwRfzgBmlfm7y4kaLFaIhJnObvVeYTbMo='; script-src-attr 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; connect-src 'self'; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self'"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-spoNzrFYGIL2O8R7ecquXngwmbxgYk7nmX1xlwYjExU=' 'sha256-Z7Mjh1RPn3a8kg8hBt3qldUGzKcjKTtyzXtc2X70hWc=' 'sha256-uyyxlbeXQNSZRUaWKeF8PEKDyrK9RlIbGSJBr24t62w=' 'sha256-iEgK0NmMjKDP/w4d4hKmcd6tB49OEOLIJSuUmMZ26LQ='; script-src-attr 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; connect-src 'self'; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self'"/>
 <title>GPA Fleet Command</title>
 <script>
   // Anti-FOUC: aplicar tema ANTES de cargar CSS para evitar flash.
@@ -2269,6 +2269,14 @@ async function loadWB(wb,fname){
     document.getElementById("hstxt").textContent="Datos cargados (sin persistir)";
   }
   loadAllNotes();
+  // Cloud sync — fire-and-forget. Si hay sesión, sube units a DynamoDB.
+  // Si no, muestra authModal y reintenta. No bloquea el flujo legacy.
+  if(typeof window.__cloudSyncUnits === "function" && units.length){
+    window.__cloudSyncUnits(units, fname, "mensual").catch(err => {
+      console.error("[cloud sync mensual] fallo:", err);
+      if(window.notify) window.notify("Cloud sync falló: " + (err.message||err), "error", 5000);
+    });
+  }
   // Show period naming modal after a short delay so the dashboard renders first
   updateHealthUI();
   setTimeout(()=>showPeriodoModal(fname), 400);
