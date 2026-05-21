@@ -92,7 +92,9 @@ const schema = a.schema({
   Periodo: a
     .model({
       tenantId: a.string().required(),
-      tipo: a.enum(["semanal", "mensual", "inspeccion"]),
+      // tipo: 'semanal' | 'mensual' | 'inspeccion' — validado en cliente.
+      // No usamos a.enum() porque Amplify Gen 2 no permite enum en identifier.
+      tipo: a.string().required(),
       fechaInicio: a.string().required(),
       fechaFin: a.string().required(),
       estatus: a.enum(["abierto", "cerrado"]),
