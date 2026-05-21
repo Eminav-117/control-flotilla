@@ -7,13 +7,19 @@ import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
  * Cada record solo es visible/editable por miembros del group correspondiente.
  * Group 'admin' tiene acceso cross-tenant.
  *
- * Identificadores: AppSync genera UUID por default (campo `id`).
- * Para dedup natural-key (placa, unitUid+fecha, etc.) se agregará un custom
- * resolver en fase futura. Por ahora confiamos en que el cliente verifique
- * antes de crear.
+ * Composite identifiers (natural keys) garantizan dedup nativa de DynamoDB:
+ * - Unit: (tenantId, placa) — 1 unidad por placa por tenant.
+ * - Taller: (tenantId, unitUid, fechaEntrada) — 1 ingreso por unidad/fecha.
+ * - Nota: (tenantId, unitUid, timestamp) — 1 nota por timestamp exacto.
+ * - Checklist: (tenantId, unitUid, fecha) — 1 inspección por día por unidad.
+ * - Periodo: (tenantId, tipo, fechaInicio) — 1 período por (tipo, inicio).
+ * - Semanal: (tenantId, periodoId, unitUid) — 1 reporte semanal por (período, unidad).
  *
- * Secondary indexes: queries por tenant + sort key alterno (placa, sucursal,
- * fechaEntrada, etc.) — reemplaza los GSIs del CDK single-table anterior.
+ * El cliente upsert pattern (create → catch conflict → update) usa estos
+ * identifiers para idempotencia: re-subir un ZIP no crea duplicados.
+ *
+ * Secondary indexes solo se mantienen cuando aportan acceso alterno (sucursal,
+ * etc.). Los GSIs redundantes con el composite PK fueron removidos.
  */
 const schema = a.schema({
   Unit: a
@@ -27,12 +33,12 @@ const schema = a.schema({
       vin: a.string(),
       version: a.integer().default(1),
     })
+    .identifier(["tenantId", "placa"])
     .authorization((allow) => [
       allow.groupDefinedIn("tenantId"),
       allow.group("admin"),
     ])
     .secondaryIndexes((index) => [
-      index("tenantId").sortKeys(["placa"]).name("byTenantAndPlaca"),
       index("tenantId").sortKeys(["sucursal"]).name("byTenantAndSucursal"),
     ]),
 
@@ -47,12 +53,10 @@ const schema = a.schema({
       estatus: a.enum(["abierto", "cerrado"]),
       version: a.integer().default(1),
     })
+    .identifier(["tenantId", "unitUid", "fechaEntrada"])
     .authorization((allow) => [
       allow.groupDefinedIn("tenantId"),
       allow.group("admin"),
-    ])
-    .secondaryIndexes((index) => [
-      index("tenantId").sortKeys(["unitUid", "fechaEntrada"]).name("byTenantUnitFecha"),
     ]),
 
   Nota: a
@@ -63,12 +67,10 @@ const schema = a.schema({
       texto: a.string().required(),
       timestamp: a.string().required(),
     })
+    .identifier(["tenantId", "unitUid", "timestamp"])
     .authorization((allow) => [
       allow.groupDefinedIn("tenantId"),
       allow.group("admin"),
-    ])
-    .secondaryIndexes((index) => [
-      index("tenantId").sortKeys(["unitUid", "timestamp"]).name("byTenantUnitTimestamp"),
     ]),
 
   Checklist: a
@@ -81,12 +83,10 @@ const schema = a.schema({
       responsable: a.string(),
       version: a.integer().default(1),
     })
+    .identifier(["tenantId", "unitUid", "fecha"])
     .authorization((allow) => [
       allow.groupDefinedIn("tenantId"),
       allow.group("admin"),
-    ])
-    .secondaryIndexes((index) => [
-      index("tenantId").sortKeys(["unitUid", "fecha"]).name("byTenantUnitFecha"),
     ]),
 
   Periodo: a
@@ -98,12 +98,10 @@ const schema = a.schema({
       estatus: a.enum(["abierto", "cerrado"]),
       version: a.integer().default(1),
     })
+    .identifier(["tenantId", "tipo", "fechaInicio"])
     .authorization((allow) => [
       allow.groupDefinedIn("tenantId"),
       allow.group("admin"),
-    ])
-    .secondaryIndexes((index) => [
-      index("tenantId").sortKeys(["fechaInicio"]).name("byTenantFechaInicio"),
     ]),
 
   Semanal: a
@@ -115,13 +113,14 @@ const schema = a.schema({
       datos: a.json(),
       version: a.integer().default(1),
     })
+    .identifier(["tenantId", "periodoId", "unitUid"])
     .authorization((allow) => [
       allow.groupDefinedIn("tenantId"),
       allow.group("admin"),
     ])
     .secondaryIndexes((index) => [
-      index("tenantId").sortKeys(["periodoId", "sucursal"]).name("byTenantPeriodoSucursal"),
-      index("tenantId").sortKeys(["unitUid"]).name("byTenantUnit"),
+      index("tenantId").sortKeys(["sucursal"]).name("byTenantAndSucursal"),
+      index("tenantId").sortKeys(["unitUid"]).name("byTenantAndUnit"),
     ]),
 });
 
