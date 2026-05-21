@@ -35,18 +35,27 @@ function extractHashes(html) {
   return hashes;
 }
 
+// connect-src endpoints AWS — necesarios para Amplify Gen 2:
+// - cognito-idp.{region}.amazonaws.com → auth (signIn, getCurrentUser, etc.)
+// - cognito-identity.{region}.amazonaws.com → identity pool (S3 access)
+// - {appsync-id}.appsync-api.{region}.amazonaws.com → GraphQL queries/mutations
+// - {appsync-id}.appsync-realtime-api.{region}.amazonaws.com → GraphQL subscriptions
+// - {bucket}.s3.{region}.amazonaws.com → fotos S3
+// Wildcard amazonaws.com cubre todos. amazoncognito.com necesario si activamos Hosted UI.
+const AWS_ENDPOINTS = "https://*.amazonaws.com wss://*.amazonaws.com https://*.amazoncognito.com";
+
 function buildCspDirective(hashes) {
   const scriptSrc = ["'self'", ...hashes].join(" ");
   // script-src-attr 'unsafe-inline': permite `onclick="..."` handlers statics (69 sites
   // HTML legado). NO permite inline <script> blocks (esos requieren hash).
   // Defense-in-depth: inline handlers escapan via escAttr/escHtml en generación;
   // external origins bloqueadas por script-src 'self'.
-  return `default-src 'self'; script-src ${scriptSrc}; script-src-attr 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; connect-src 'self'; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self'`;
+  return `default-src 'self'; script-src ${scriptSrc}; script-src-attr 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data: https://*.amazonaws.com; connect-src 'self' ${AWS_ENDPOINTS}; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self'`;
 }
 
 function buildCspNginx(hashes) {
   const scriptSrc = ["'self'", ...hashes].join(" ");
-  return `default-src 'self'; script-src ${scriptSrc}; script-src-attr 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; connect-src 'self'; font-src 'self' data:; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'`;
+  return `default-src 'self'; script-src ${scriptSrc}; script-src-attr 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data: https://*.amazonaws.com; connect-src 'self' ${AWS_ENDPOINTS}; font-src 'self' data:; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'`;
 }
 
 function updateHtml(html, hashes) {
